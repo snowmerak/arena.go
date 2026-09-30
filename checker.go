@@ -3,6 +3,7 @@ package arena
 import (
 	"cmp"
 	"fmt"
+	"reflect"
 	"slices"
 )
 
@@ -47,6 +48,8 @@ func (a *Arena) Allocations() []Allocation {
 		switch rec.request.kind {
 		case objectAllocation:
 			name = rec.request.typ.String()
+		case sliceAllocation:
+			name = "[]" + rec.request.typ.Elem().String()
 		case stringAllocation:
 			name = "arena.String"
 		}
@@ -85,9 +88,12 @@ func (a *Arena) Check() error {
 			return fmt.Errorf("arena: invalid alignment at %v", where)
 		}
 		switch r.kind {
-		case objectAllocation:
+		case objectAllocation, sliceAllocation:
 			if r.typ == nil || r.typ.Size() != uintptr(b.size) || r.typ.Align() != r.align {
 				return fmt.Errorf("arena: invalid object type at %v", where)
+			}
+			if r.kind == sliceAllocation && r.typ.Kind() != reflect.Array {
+				return fmt.Errorf("arena: invalid slice type at %v", where)
 			}
 		case byteAllocation, stringAllocation:
 			if r.typ != nil || r.align != 1 {

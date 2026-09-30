@@ -11,6 +11,7 @@ const (
 	objectAllocation allocationKind = iota
 	byteAllocation
 	stringAllocation
+	sliceAllocation
 )
 
 // location identifies storage, independently of allocation generation. Different
@@ -24,7 +25,7 @@ type allocationRequest struct {
 	size  int
 	align int
 	kind  allocationKind
-	typ   reflect.Type // Exact type for objects; nil for bytes and strings.
+	typ   reflect.Type // Exact object type or [N]T for slices; nil for bytes/strings.
 }
 
 type memoryBlock struct {

@@ -26,7 +26,7 @@ var cycleChecksum uint64
 func BenchmarkLifecycle(b *testing.B) {
 	for _, count := range []int{10_000, 100_000, 1_000_000} {
 		b.Run(fmt.Sprintf("N%d", count), func(b *testing.B) {
-			for _, mode := range []string{"HeapObjects", "SliceFresh", "SliceReuse", "ArenaFresh", "ArenaReset", "ArenaFree"} {
+			for _, mode := range []string{"HeapObjects", "SliceFresh", "SliceReuse", "ArenaFresh", "ArenaReset", "ArenaFree", "ArenaSliceFresh", "ArenaSliceReset", "ArenaSliceFree"} {
 				b.Run(mode, func(b *testing.B) { benchmarkLifecycle(b, mode, count) })
 			}
 		})
@@ -43,7 +43,7 @@ func benchmarkLifecycle(b *testing.B, mode string, count int) {
 
 	var reusable *arena.Arena
 	var slab []cycleRecord
-	if mode == "ArenaReset" || mode == "ArenaFree" {
+	if mode == "ArenaReset" || mode == "ArenaFree" || mode == "ArenaSliceReset" || mode == "ArenaSliceFree" {
 		var err error
 		reusable, err = arena.New(count * int(unsafe.Sizeof(cycleRecord{})))
 		if err != nil {
@@ -95,7 +95,7 @@ func runLifecycle(b *testing.B, mode string, reusable *arena.Arena, slab []cycle
 	// Use testing's high-resolution clock (QueryPerformanceCounter on Windows)
 	// for phase timings as well as ns/op. time.Now can be too coarse here.
 	start := b.Elapsed()
-	a := populateCycle(b, mode, reusable, slab, values)
+	a, batch := populateCycle(b, mode, reusable, slab, values)
 	var sum uint64
 	for _, p := range values {
 		sum += p.ID
@@ -111,12 +111,12 @@ func runLifecycle(b *testing.B, mode string, reusable *arena.Arena, slab []cycle
 	allocated := b.Elapsed()
 
 	switch mode {
-	case "ArenaFresh":
+	case "ArenaFresh", "ArenaSliceFresh":
 		if err := a.Close(); err != nil {
 			b.Fatal(err)
 		}
 		a = nil
-	case "ArenaReset":
+	case "ArenaReset", "ArenaSliceReset":
 		if err := a.Reset(); err != nil {
 			b.Fatal(err)
 		}
@@ -127,17 +127,23 @@ func runLifecycle(b *testing.B, mode string, reusable *arena.Arena, slab []cycle
 				b.Fatal(err)
 			}
 		}
+	case "ArenaSliceFree":
+		if err := a.FreeSlice(batch); err != nil {
+			b.Fatal(err)
+		}
 	case "SliceReuse":
 		clear(slab)
 	}
+	batch = nil
 	clear(values) // Remove every borrowed pointer before the collection.
 	runtime.GC()  // Waits for a full mark/sweep cycle; included for every mode.
 	runtime.KeepAlive(a)
 	runtime.KeepAlive(slab)
+	runtime.KeepAlive(batch)
 	return allocated - start, b.Elapsed() - allocated
 }
 
-func populateCycle(b *testing.B, mode string, a *arena.Arena, slab []cycleRecord, values []*cycleRecord) *arena.Arena {
+func populateCycle(b *testing.B, mode string, a *arena.Arena, slab []cycleRecord, values []*cycleRecord) (*arena.Arena, []cycleRecord) {
 	switch mode {
 	case "HeapObjects":
 		for i := range values {
@@ -145,6 +151,24 @@ func populateCycle(b *testing.B, mode string, a *arena.Arena, slab []cycleRecord
 			fillCycleRecord(p, i)
 			values[i] = p
 		}
+	case "ArenaSliceFresh", "ArenaSliceReset", "ArenaSliceFree":
+		var err error
+		if mode == "ArenaSliceFresh" {
+			a, err = arena.New(len(values) * int(unsafe.Sizeof(cycleRecord{})))
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+		batch, err := a.AllocSlice[cycleRecord](len(values))
+		if err != nil {
+			b.Fatal(err)
+		}
+		for i := range values {
+			p := &batch[i]
+			fillCycleRecord(p, i)
+			values[i] = p
+		}
+		return a, batch
 	case "SliceFresh", "SliceReuse":
 		if mode == "SliceFresh" {
 			slab = make([]cycleRecord, len(values))
@@ -171,7 +195,7 @@ func populateCycle(b *testing.B, mode string, a *arena.Arena, slab []cycleRecord
 			values[i] = p
 		}
 	}
-	return a
+	return a, nil
 }
 
 func fillCycleRecord(p *cycleRecord, index int) {

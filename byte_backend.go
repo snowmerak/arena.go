@@ -2,6 +2,7 @@ package arena
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"unsafe"
 )
@@ -10,17 +11,21 @@ type span struct{ start, end int }
 
 // byteBackend owns bump allocation and hole reuse in a single noscan buffer.
 type byteBackend struct {
-	data []byte
-	head int
-	used int
-	free []span // Sorted, disjoint holes strictly below head.
+	data     []byte
+	head     int
+	used     int
+	free     []span       // Sorted, disjoint holes strictly below head.
+	lastType reflect.Type // Last validated pointer-free type; protected by Arena.mu.
 }
 
 var _ backend = (*byteBackend)(nil)
 
 func (s *byteBackend) allocate(request allocationRequest) (memoryBlock, error) {
-	if request.typ != nil && !isPointerFree(request.typ) {
-		return memoryBlock{}, fmt.Errorf("%w: %v", ErrPointerType, request.typ)
+	if request.typ != nil && request.typ != s.lastType {
+		if !isPointerFree(request.typ) {
+			return memoryBlock{}, fmt.Errorf("%w: %v", ErrPointerType, request.typ)
+		}
+		s.lastType = request.typ
 	}
 	reserved := max(request.size, 1)
 	offset := -1
@@ -89,11 +94,18 @@ func (s *byteBackend) addFree(hole span) {
 	i, _ := slices.BinarySearchFunc(s.free, hole.start, func(existing span, start int) int {
 		return existing.start - start
 	})
-	s.free = slices.Insert(s.free, i, hole)
-	if i > 0 && s.free[i-1].end == s.free[i].start {
-		s.free[i-1].end = s.free[i].end
-		s.free = slices.Delete(s.free, i, i+1)
+	// Merge in place before inserting. Sequential frees commonly extend one
+	// existing span, so they need neither a slice shift nor temporary capacity.
+	if i > 0 && s.free[i-1].end == hole.start {
+		s.free[i-1].end = hole.end
 		i--
+	} else if i < len(s.free) && hole.end == s.free[i].start {
+		s.free[i].start = hole.start
+	} else if hole.end == s.head {
+		s.head = hole.start
+		return
+	} else {
+		s.free = slices.Insert(s.free, i, hole)
 	}
 	if i+1 < len(s.free) && s.free[i].end == s.free[i+1].start {
 		s.free[i].end = s.free[i+1].end
@@ -113,6 +125,7 @@ func (s *byteBackend) reset() {
 
 func (s *byteBackend) close() {
 	s.data, s.free = nil, nil
+	s.lastType = nil
 	s.head, s.used = 0, 0
 }
 

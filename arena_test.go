@@ -422,6 +422,7 @@ func TestConcurrentIndependentAllocations(t *testing.T) {
 }
 
 func FuzzArena(f *testing.F) {
+	f.Add([]byte{5, 16, 5, 0, 1, 0, 3, 42, 5, 8, 2, 0})
 	f.Add([]byte{0, 8, 0, 16, 1, 0, 3, 42, 4, 9, 2, 0})
 	f.Add([]byte{0, 0, 1, 0, 1, 0, 0, 255, 3, 1})
 	f.Fuzz(func(t *testing.T, operations []byte) {
@@ -429,15 +430,16 @@ func FuzzArena(f *testing.F) {
 		type entry struct {
 			buffer arena.Buffer
 			ptr    *uint64
+			batch  []uint64
 			str    arena.String
 			value  byte
 			kind   byte
 		}
 		var live []entry
 		for i := 0; i+1 < min(len(operations), 2048); i += 2 {
-			op, value := operations[i]%5, operations[i+1]
+			op, value := operations[i]%6, operations[i+1]
 			switch op {
-			case 0, 3, 4:
+			case 0, 3, 4, 5:
 				e := entry{kind: op, value: value}
 				var err error
 				switch op {
@@ -467,6 +469,17 @@ func FuzzArena(f *testing.F) {
 				case 4:
 					e.str, err = a.NewString(string([]byte{value}))
 					e.buffer = e.str.Buffer()
+				case 5:
+					e.batch, err = a.AllocSlice[uint64](int(value % 32))
+					if err == nil {
+						for j, got := range e.batch {
+							if got != 0 {
+								t.Fatal("new batch not zeroed")
+							}
+							e.batch[j] = uint64(value) + uint64(j)
+						}
+						e.buffer, err = a.BufferOfSlice(e.batch)
+					}
 				}
 				if err == nil {
 					live = append(live, e)
@@ -477,7 +490,13 @@ func FuzzArena(f *testing.F) {
 				if len(live) > 0 {
 					index := int(value) % len(live)
 					b := live[index].buffer
-					if err := a.FreeBuffer(b); err != nil {
+					var err error
+					if live[index].kind == 5 {
+						err = a.FreeSlice(live[index].batch)
+					} else {
+						err = a.FreeBuffer(b)
+					}
+					if err != nil {
 						t.Fatal(err)
 					}
 					requireError(t, a.FreeBuffer(b), arena.ErrInvalidBuffer)
@@ -520,6 +539,12 @@ func FuzzArena(f *testing.F) {
 					got, err := a.String(e.str)
 					if err != nil || got != string([]byte{e.value}) {
 						t.Fatal("live string was overwritten")
+					}
+				case 5:
+					for j, got := range e.batch {
+						if got != uint64(e.value)+uint64(j) {
+							t.Fatal("live batch was overwritten")
+						}
 					}
 				}
 			}

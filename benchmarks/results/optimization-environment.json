@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-30",
+  "baseline_revision": "0a36f0ba794e92503b69394f837fa3776b77af3c",
+  "optimized_revision": "working tree; source hashes below",
+  "go": "go version go1.27.1 windows/arm64",
+  "os": "windows",
+  "arch": "arm64",
+  "cpu": "Snapdragon X Plus X1P42100 / Qualcomm Oryon",
+  "logical_cpus": 8,
+  "GOMAXPROCS": 8,
+  "GOGC": 100,
+  "GOMEMLIMIT": "off",
+  "GOEXPERIMENT": "",
+  "object_bytes": 64,
+  "objects": [
+    10000,
+    100000,
+    1000000
+  ],
+  "warmup_cycles_per_sample": 1,
+  "measured_cycles_per_sample": 1,
+  "samples_per_case": 7,
+  "execution_order": "before/after on rounds 1, 3, 5, 7; after/before on rounds 2, 4, 6",
+  "benchmark_arguments": [
+    "-test.run=^$",
+    "-test.bench=^BenchmarkLifecycle$",
+    "-test.benchtime=1x",
+    "-test.count=1",
+    "-test.cpu=8",
+    "-test.benchmem"
+  ],
+  "before_binary_sha256": "6DC876B5352BBDDC75C45E093438E7345858DFF20D374DDEABA573A430F6FEDB",
+  "after_binary_sha256": "E1894F92A7A87025E07B16BB625A4536C60B2C2D010BF6180EB1AFB323287E46",
+  "source_hash_normalization": "UTF-8 without BOM, CRLF converted to LF",
+  "source_sha256": {
+    "arena_bench_test.go": "ABDDA276AFFAF3E3D83A91491C377F60DD8D4593095D73E0F94D6E0C8B967CE6",
+    "arena_test.go": "E08690A70D86E25B8FD9D09AC9BFA9A2824CABBA732EDCFCB097DE099EE801E5",
+    "arena.go": "FF35221D81FD2DC83E56087D4EEE507AB4512514DF2351B2A3FFDF553C78EC7D",
+    "backend_test.go": "0E4C02B3F68F4FF6EC1104C90139D255B1AE591B93B9D90EE1177DD7B647151B",
+    "backend.go": "7915E3D2473CC2C5861107CF59B94A5808318000CB067FCFFD0C6D1C9C1FB15F",
+    "buffer.go": "66B7356B4FC111654A56CCEDDFD4CC02F8FCDB3DD8D48046C6724EE2BFBFF874",
+    "byte_backend.go": "700BD0407AD63954D04124895563A091C7CA5C19E7224110E73BA778790EBEFB",
+    "checker_test.go": "F017372AE03775D7118B95AE72CD29A0D741F68872FAF4F2D1AFB33E5FB25EF0",
+    "checker.go": "A2633154B2A90DA2B6145F4DFC7601A779D6979B8CA1FB1BD004C765C2A5A45F",
+    "cycle_bench_test.go": "00119BC5B453E7691D9D8C979532759EBAD31465897520D68089A1AAFA877B19",
+    "example_test.go": "D3F61C2D0DE75B8BEB12F5586F82EF8F102989B7D7DB6C955FFB25C004D7CCE2",
+    "slice_test.go": "17CEAB83B150345FC460512268E41951A0F25A2856D55FB2355FAEBADE73D759",
+    "slice.go": "7FCED2C08FDDDE6EF4661F6EC804DD83E48E9678239C4822DD47D9B62792256C",
+    "string.go": "75A0D799824B60754FAAE5973DCCA627D03CEB8AD051CB2CA0FEFFFB958AFB92",
+    "typeinfo.go": "864ADA9D0277A6E3D15800FBE0590F0835DD0675CC9F63099EB079641F2452CD"
+  }
+}

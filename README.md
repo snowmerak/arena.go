@@ -42,6 +42,8 @@ func main() {
 ## Allocation and reuse
 
 - `Alloc[T]()` computes size and alignment and returns a zero-initialized `*T`.
+- `AllocSlice[T](n)` returns n zero-initialized elements with length and capacity
+  n, tracked as **one allocation**. `FreeSlice(values)` releases the whole batch.
 - Allocation searches reusable regions in address order, then advances the bump
   offset if no suitable region is available.
 - `Free(ptr)` and `FreeBuffer(handle)` clear storage and merge adjacent free
@@ -57,6 +59,40 @@ func main() {
 - `Close()` invalidates every allocation and releases the arena's references to
   storage. The GC determines when memory is reclaimed. Closing is idempotent.
 
+## Bulk allocation
+
+When many objects share a lifetime, allocate them together to avoid a mutex,
+type-cache lookup, and live-map insertion for every object:
+
+```go
+users, err := a.AllocSlice[User](10_000)
+if err != nil { panic(err) }
+for i := range users {
+    users[i].ID = uint64(i)
+}
+if err := a.FreeSlice(users); err != nil { panic(err) }
+```
+
+Pass the original slice to `FreeSlice`, with its original length and capacity.
+Elements cannot be freed individually. `Reset` also releases the batch.
+`BufferOfSlice(values)` captures a generation-checked handle for `FreeBuffer`;
+its `Len()` is the byte size of the batch. `Stats().Active` counts the batch once.
+Empty batches and batches of zero-sized elements reserve one byte per batch.
+Allocations are shown as `[]T` in diagnostic snapshots.
+
+Slice views are borrowed, just like object pointers. Do not access them after
+release, and do not store their slice headers inside byte-backed arena objects.
+Pointer-bearing element types are still rejected. Raw slices have the same ABA
+limitation as raw pointers; capture a handle before release when that matters.
+
+In the measured one-million-object lifecycle workload, bulk allocation with
+reused storage took **18.8ms with Reset** or **19.6ms with FreeSlice**, versus
+**51.4ms for individual heap allocations**. Creating and closing a fresh bulk
+arena took **32.6ms**. A plain reused `[]T` took **14.4ms**. These are medians of
+seven local observations including use and forced GC, not universal guarantees.
+See the [optimization report](benchmarks/optimization.md) for ranges, memory
+costs, comparison with the old API, and reproduction instructions.
+
 ## GC and lifetime rules
 
 The GC does not scan a `[]byte` backing array for pointers. Reinterpreting its
@@ -68,7 +104,7 @@ rejected. Numeric values, booleans, pointer-free arrays and structs,
 `arena.String`, and `arena.Buffer` are supported. `uintptr` is allowed as a number,
 but storing an object's address in it does not keep that object alive.
 
-Returned `*T` and `[]byte` values are borrowed views. Do not read or write them
+Returned `*T`, `[]T`, and `[]byte` values are borrowed views. Do not read or write them
 after their allocation is freed, or after `Reset` or `Close`. The API cannot
 revoke pointers or slices already handed to a caller. An ordinary Go pointer or
 slice can keep the backing array alive, but that does not make a freed region
@@ -138,7 +174,8 @@ Common allocation management is separate from physical storage.
 | Internal `backend` | Storage-specific allocation, release, reset, address lookup, statistics, and checking |
 | `byteBackend` | The default byte array, alignment, free region merging, and pointer-type rejection |
 
-The public API remains `New`, `Alloc[T]`, and `Free`. Additional storage strategies
+The public API includes `New`, `Alloc[T]`, `Free`, `AllocSlice[T]`, and `FreeSlice`.
+Additional storage strategies
 can implement the internal `backend` interface and be composed through a new
 constructor. A public backend registration API and a production typed-chunk
 allocator are not implemented. The default `New` still rejects pointer-bearing
@@ -161,6 +198,14 @@ Operations are therefore neither universally O(1) nor guaranteed to perform zero
 heap allocations. This implementation is not guaranteed to outperform `new`.
 Measure your actual workload.
 
+The byte backend remembers its last validated type under the existing mutex,
+and adjacent frees merge before inserting a new free-list entry. These reduce
+repeated bookkeeping but leave per-object tracking costs in `Alloc`/`Free`.
+`AllocSlice` avoids those costs per element. It passes an exact reflected `[n]T`
+type to the backend; Go caches these type descriptors, so use a bounded set of
+batch sizes when descriptor retention matters. Fresh sizes/types can allocate
+metadata even when a batch ultimately fails to allocate storage.
+
 ```text
 go test ./...
 go vet ./...
@@ -176,8 +221,9 @@ pointers so the compiler cannot optimize those allocations onto the stack.
 
 `BenchmarkLifecycle` covers bulk creation, use, release, and completion of GC.
 It compares fresh and reused heap, slice, and arena storage for 10,000, 100,000,
-and 1,000,000 objects of 64 bytes each. The current arena was slower than ordinary
-heap allocation in this workload. See the [methodology and results](benchmarks/README.md)
+and 1,000,000 objects of 64 bytes each, including the new bulk API. The per-object
+arena remains slower than ordinary heap allocation in this workload. See the
+[original investigation](benchmarks/README.md) and [optimization results](benchmarks/optimization.md)
 for repeated measurements, memory costs, raw logs, and CPU profile analysis.
 
 The initial commit, `e6b57b0`, was validated with Go 1.27.1 on Windows/arm64 using

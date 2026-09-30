@@ -1,0 +1,155 @@
+
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    629200 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    199200 create-use-ns/op	    428900 release-GC-ns/op	         0 retained-heap-B	  640000 B/op	   10000 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    643500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    121400 create-use-ns/op	    521900 release-GC-ns/op	       224.0 retained-heap-B	  647392 B/op	       3 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    304600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    108000 create-use-ns/op	    196400 release-GC-ns/op	    647168 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   2634700 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2121300 create-use-ns/op	    512900 release-GC-ns/op	      5512 retained-heap-B	 4842040 B/op	      84 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1730300 ns/op	   1016700 GC-pause-ns/op	         1.000 GCs/op	   1310900 create-use-ns/op	    419100 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   8208300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1563000 create-use-ns/op	   6644700 release-GC-ns/op	   2745976 retained-heap-B	     224 B/op	       2 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   8826400 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3517200 create-use-ns/op	   5308700 release-GC-ns/op	       336.0 retained-heap-B	 6400336 B/op	  100003 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   8181500 ns/op	    671800 GC-pause-ns/op	         2.000 GCs/op	   3796200 create-use-ns/op	   4384900 release-GC-ns/op	       224.0 retained-heap-B	 6406368 B/op	       3 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1901000 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1011400 create-use-ns/op	    889200 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  66396800 ns/op	   2018000 GC-pause-ns/op	         4.000 GCs/op	  63122100 create-use-ns/op	   3272800 release-GC-ns/op	        16.00 retained-heap-B	39970232 B/op	     535 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  37158100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  34469600 create-use-ns/op	   2687300 release-GC-ns/op	  23189272 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  84571300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  32543700 create-use-ns/op	  52026200 release-GC-ns/op	  25419208 retained-heap-B	 4459840 B/op	      69 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  53202300 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  45128700 create-use-ns/op	   8072500 release-GC-ns/op	         0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  34594000 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  32762900 create-use-ns/op	   1830200 release-GC-ns/op	       112.0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  17499800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  14819000 create-use-ns/op	   2680100 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 680755700 ns/op	   2533900 GC-pause-ns/op	         5.000 GCs/op	 675941700 create-use-ns/op	   4812700 release-GC-ns/op	      5112 retained-heap-B	599212272 B/op	    8198 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 846866600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 785214500 create-use-ns/op	  61650900 release-GC-ns/op	 332524168 retained-heap-B	 1573248 B/op	      24 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1533057200 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 709103200 create-use-ns/op	 823952400 release-GC-ns/op	 332524328 retained-heap-B	 1048832 B/op	      16 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	   1107500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    279800 create-use-ns/op	    826400 release-GC-ns/op	         0 retained-heap-B	  640000 B/op	   10000 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    415200 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    117400 create-use-ns/op	    297400 release-GC-ns/op	         0 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    302300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    101100 create-use-ns/op	    201100 release-GC-ns/op	    647168 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   3001500 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2773000 create-use-ns/op	    228300 release-GC-ns/op	       432.0 retained-heap-B	 4842168 B/op	      86 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1870400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1456300 create-use-ns/op	    413200 release-GC-ns/op	   2745720 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   3244700 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1354200 create-use-ns/op	   1890000 release-GC-ns/op	   2745640 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   4543900 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3639900 create-use-ns/op	    903400 release-GC-ns/op	         0 retained-heap-B	 6400000 B/op	  100000 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   4607900 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2759300 create-use-ns/op	   1848100 release-GC-ns/op	         0 retained-heap-B	 6406144 B/op	       1 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1588300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1041200 create-use-ns/op	    546700 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  37711600 ns/op	   4798800 GC-pause-ns/op	         4.000 GCs/op	  36926600 create-use-ns/op	    784200 release-GC-ns/op	      5224 retained-heap-B	39970248 B/op	     536 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  30018800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  26059900 create-use-ns/op	   3958400 release-GC-ns/op	  23189256 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  68661600 ns/op	   2012800 GC-pause-ns/op	         1.000 GCs/op	  32544000 create-use-ns/op	  36116400 release-GC-ns/op	  25288104 retained-heap-B	 4197632 B/op	      65 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  43862700 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  34840700 create-use-ns/op	   9020200 release-GC-ns/op	       112.0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  29048500 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  22357300 create-use-ns/op	   6690400 release-GC-ns/op	         0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  13487800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  11164000 create-use-ns/op	   2323500 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 613670000 ns/op	   3555700 GC-pause-ns/op	         6.000 GCs/op	 608821300 create-use-ns/op	   4846800 release-GC-ns/op	         0 retained-heap-B	599993784 B/op	    8203 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	1060507900 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	1010977600 create-use-ns/op	  49528600 release-GC-ns/op	 332524184 retained-heap-B	 2359872 B/op	      36 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1467211900 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 708715200 create-use-ns/op	 758494700 release-GC-ns/op	 332524200 retained-heap-B	 1311040 B/op	      20 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    538800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    226300 create-use-ns/op	    312300 release-GC-ns/op	      5208 retained-heap-B	  645208 B/op	   10007 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    343100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    126000 create-use-ns/op	    216800 release-GC-ns/op	         0 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	   4380800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    153900 create-use-ns/op	   4226600 release-GC-ns/op	    647392 retained-heap-B	     224 B/op	       2 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   2589000 ns/op	   1130000 GC-pause-ns/op	         2.000 GCs/op	   2383000 create-use-ns/op	    205200 release-GC-ns/op	       304.0 retained-heap-B	 4842040 B/op	      84 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1291500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    984800 create-use-ns/op	    306100 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   3204100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1385400 create-use-ns/op	   1818300 release-GC-ns/op	   2745640 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   5059800 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3400000 create-use-ns/op	   1659200 release-GC-ns/op	         0 retained-heap-B	 6400000 B/op	  100000 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   6147200 ns/op	   2042800 GC-pause-ns/op	         2.000 GCs/op	   2856500 create-use-ns/op	   3289900 release-GC-ns/op	       112.0 retained-heap-B	 6406256 B/op	       2 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1575800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1013300 create-use-ns/op	    562200 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  43880400 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  42254700 create-use-ns/op	   1624700 release-GC-ns/op	      5432 retained-heap-B	39970568 B/op	     538 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  36933600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  34417800 create-use-ns/op	   2515000 release-GC-ns/op	  23189256 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  80635500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  34530100 create-use-ns/op	  46104500 release-GC-ns/op	  24895016 retained-heap-B	 3411008 B/op	      53 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  55085100 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  45878800 create-use-ns/op	   9204800 release-GC-ns/op	       112.0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  43070300 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  25680800 create-use-ns/op	  17388300 release-GC-ns/op	         0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  16422500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  10471200 create-use-ns/op	   5949800 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 637725300 ns/op	         0 GC-pause-ns/op	         5.000 GCs/op	 631074200 create-use-ns/op	   6649500 release-GC-ns/op	         0 retained-heap-B	599207160 B/op	    8191 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 829112500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 784274200 create-use-ns/op	  44836800 release-GC-ns/op	 332524168 retained-heap-B	 1048832 B/op	      16 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1976450300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 826186800 create-use-ns/op	1150261800 release-GC-ns/op	 332524312 retained-heap-B	 1573248 B/op	      24 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    507500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    248900 create-use-ns/op	    258300 release-GC-ns/op	         0 retained-heap-B	  640000 B/op	   10000 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    324100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    130100 create-use-ns/op	    193800 release-GC-ns/op	      5096 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    390800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    101300 create-use-ns/op	    288900 release-GC-ns/op	    647168 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	  10056100 ns/op	    508400 GC-pause-ns/op	         2.000 GCs/op	   3192800 create-use-ns/op	   6862500 release-GC-ns/op	       544.0 retained-heap-B	 4842264 B/op	      86 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1345600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1017700 create-use-ns/op	    327100 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   3867300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1438800 create-use-ns/op	   2428100 release-GC-ns/op	   2745864 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   9554500 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   8488900 create-use-ns/op	   1065100 release-GC-ns/op	       112.0 retained-heap-B	 6400112 B/op	  100001 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   4178400 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2312200 create-use-ns/op	   1866000 release-GC-ns/op	         0 retained-heap-B	 6406144 B/op	       1 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1615400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1049200 create-use-ns/op	    565700 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  34859500 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  34090800 create-use-ns/op	    768300 release-GC-ns/op	      5096 retained-heap-B	39975328 B/op	     541 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  34769400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  31158600 create-use-ns/op	   3610300 release-GC-ns/op	  23321512 retained-heap-B	  264512 B/op	       5 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  78501000 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  39817000 create-use-ns/op	  38682500 release-GC-ns/op	  25681528 retained-heap-B	 4984368 B/op	      78 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  43992100 ns/op	   2030100 GC-pause-ns/op	         4.000 GCs/op	  36516100 create-use-ns/op	   7474500 release-GC-ns/op	         0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  23505800 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  21894500 create-use-ns/op	   1610200 release-GC-ns/op	         0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  18827400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  10758600 create-use-ns/op	   8068200 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 782255000 ns/op	         0 GC-pause-ns/op	         5.000 GCs/op	 745158000 create-use-ns/op	  37096100 release-GC-ns/op	       128.0 retained-heap-B	599993800 B/op	    8204 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 796379400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 743809700 create-use-ns/op	  52568000 release-GC-ns/op	 332524184 retained-heap-B	 1048832 B/op	      16 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1591965500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 749529500 create-use-ns/op	 842433300 release-GC-ns/op	 332524200 retained-heap-B	  262208 B/op	       4 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    896000 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    204100 create-use-ns/op	    691800 release-GC-ns/op	      5320 retained-heap-B	  645096 B/op	   10006 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    347500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    121500 create-use-ns/op	    225800 release-GC-ns/op	         0 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    764700 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    107100 create-use-ns/op	    657300 release-GC-ns/op	    647392 retained-heap-B	     224 B/op	       2 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   4760900 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   4477600 create-use-ns/op	    282700 release-GC-ns/op	       528.0 retained-heap-B	 4842152 B/op	      85 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1362700 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1005400 create-use-ns/op	    356900 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   2808500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1009100 create-use-ns/op	   1799200 release-GC-ns/op	   2745864 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   4912100 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3099800 create-use-ns/op	   1811100 release-GC-ns/op	       336.0 retained-heap-B	 6400112 B/op	  100001 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   4765300 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2280900 create-use-ns/op	   2484200 release-GC-ns/op	         0 retained-heap-B	 6406144 B/op	       1 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   2115000 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1534400 create-use-ns/op	    580000 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  54720600 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  54015300 create-use-ns/op	    704200 release-GC-ns/op	        16.00 retained-heap-B	39970248 B/op	     536 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  41459800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  35870400 create-use-ns/op	   5588200 release-GC-ns/op	  23189256 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  87946400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  44583900 create-use-ns/op	  43361100 release-GC-ns/op	  25681416 retained-heap-B	 4984256 B/op	      77 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  48838300 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  39036800 create-use-ns/op	   9799900 release-GC-ns/op	         0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  50631700 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  34233800 create-use-ns/op	  16396900 release-GC-ns/op	         0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  13770500 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  11555100 create-use-ns/op	   2214100 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	1593173100 ns/op	         0 GC-pause-ns/op	         5.000 GCs/op	1582118200 create-use-ns/op	  11053400 release-GC-ns/op	       144.0 retained-heap-B	599993928 B/op	    8206 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 785883900 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 750144000 create-use-ns/op	  35738200 release-GC-ns/op	 332524280 retained-heap-B	 1311040 B/op	      20 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1723050700 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 950013600 create-use-ns/op	 773034900 release-GC-ns/op	 332524200 retained-heap-B	 1311040 B/op	      20 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    528100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    224200 create-use-ns/op	    303400 release-GC-ns/op	      5112 retained-heap-B	  640000 B/op	   10000 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    422200 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    150600 create-use-ns/op	    271400 release-GC-ns/op	         0 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    465700 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    176500 create-use-ns/op	    288900 release-GC-ns/op	    647168 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   3022700 ns/op	    533400 GC-pause-ns/op	         2.000 GCs/op	   2633400 create-use-ns/op	    388900 release-GC-ns/op	       528.0 retained-heap-B	 4842040 B/op	      84 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1328400 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    996300 create-use-ns/op	    331400 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   3357600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1345800 create-use-ns/op	   2011400 release-GC-ns/op	   2745640 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   4775200 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3594600 create-use-ns/op	   1180400 release-GC-ns/op	       112.0 retained-heap-B	 6400112 B/op	  100001 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   4765300 ns/op	   1025900 GC-pause-ns/op	         2.000 GCs/op	   2964600 create-use-ns/op	   1800300 release-GC-ns/op	         0 retained-heap-B	 6406144 B/op	       1 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1580600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1026500 create-use-ns/op	    553800 release-GC-ns/op	   6406144 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  33607700 ns/op	    545800 GC-pause-ns/op	         4.000 GCs/op	  32690500 create-use-ns/op	    916500 release-GC-ns/op	         0 retained-heap-B	39970232 B/op	     535 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  36764900 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  34397800 create-use-ns/op	   2365600 release-GC-ns/op	  23194352 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  91199900 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  43587900 create-use-ns/op	  47610800 release-GC-ns/op	  25157128 retained-heap-B	 3935424 B/op	      61 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  55678200 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  35532700 create-use-ns/op	  20144500 release-GC-ns/op	         0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  32228900 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	  26418600 create-use-ns/op	   5809400 release-GC-ns/op	       112.0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  17519100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  10456900 create-use-ns/op	   7061200 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 742693100 ns/op	   1012800 GC-pause-ns/op	         5.000 GCs/op	 735269700 create-use-ns/op	   7422200 release-GC-ns/op	       112.0 retained-heap-B	599469368 B/op	    8195 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 718965100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 678332500 create-use-ns/op	  40630800 release-GC-ns/op	 332524184 retained-heap-B	 1311040 B/op	      20 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1648050600 ns/op	    513300 GC-pause-ns/op	         1.000 GCs/op	 814151900 create-use-ns/op	 833897000 release-GC-ns/op	 332524312 retained-heap-B	 2622192 B/op	      41 allocs/op
+PASS
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N10000/HeapObjects-8         	       1	    664100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    427500 create-use-ns/op	    236400 release-GC-ns/op	        16.00 retained-heap-B	  640000 B/op	   10000 allocs/op
+BenchmarkLifecycle/N10000/SliceFresh-8          	       1	    367800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    119600 create-use-ns/op	    247700 release-GC-ns/op	         0 retained-heap-B	  647168 B/op	       1 allocs/op
+BenchmarkLifecycle/N10000/SliceReuse-8          	       1	    301600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	    103200 create-use-ns/op	    198200 release-GC-ns/op	    647168 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFresh-8          	       1	   3279000 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3052900 create-use-ns/op	    225400 release-GC-ns/op	       704.0 retained-heap-B	 4842056 B/op	      85 allocs/op
+BenchmarkLifecycle/N10000/ArenaReset-8          	       1	   1870600 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1435600 create-use-ns/op	    434600 release-GC-ns/op	   2745608 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N10000/ArenaFree-8           	       1	   3823300 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1881100 create-use-ns/op	   1941800 release-GC-ns/op	   2745752 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/HeapObjects-8        	       1	   4639700 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   3473600 create-use-ns/op	   1165600 release-GC-ns/op	         0 retained-heap-B	 6400000 B/op	  100000 allocs/op
+BenchmarkLifecycle/N100000/SliceFresh-8         	       1	   3711900 ns/op	         0 GC-pause-ns/op	         2.000 GCs/op	   2848600 create-use-ns/op	    863000 release-GC-ns/op	         0 retained-heap-B	 6406144 B/op	       1 allocs/op
+BenchmarkLifecycle/N100000/SliceReuse-8         	       1	   1698100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	   1063500 create-use-ns/op	    633900 release-GC-ns/op	   6406160 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFresh-8         	       1	  43721600 ns/op	   1002500 GC-pause-ns/op	         4.000 GCs/op	  42226100 create-use-ns/op	   1493500 release-GC-ns/op	      5112 retained-heap-B	39975344 B/op	     542 allocs/op
+BenchmarkLifecycle/N100000/ArenaReset-8         	       1	  28321800 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  26254000 create-use-ns/op	   2066900 release-GC-ns/op	  23189368 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N100000/ArenaFree-8          	       1	  90730100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  35539800 create-use-ns/op	  55188300 release-GC-ns/op	  25288328 retained-heap-B	 4197632 B/op	      65 allocs/op
+BenchmarkLifecycle/N1000000/HeapObjects-8       	       1	  45101600 ns/op	         0 GC-pause-ns/op	         4.000 GCs/op	  36552500 create-use-ns/op	   8548300 release-GC-ns/op	       112.0 retained-heap-B	64000000 B/op	 1000000 allocs/op
+BenchmarkLifecycle/N1000000/SliceFresh-8        	       1	  25058400 ns/op	   7635700 GC-pause-ns/op	         2.000 GCs/op	  23126700 create-use-ns/op	   1930700 release-GC-ns/op	         0 retained-heap-B	64004096 B/op	       1 allocs/op
+BenchmarkLifecycle/N1000000/SliceReuse-8        	       1	  14000200 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	  11477400 create-use-ns/op	   2521900 release-GC-ns/op	  64004096 retained-heap-B	       0 B/op	       0 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFresh-8        	       1	 704899200 ns/op	         0 GC-pause-ns/op	         5.000 GCs/op	 694918600 create-use-ns/op	   9978600 release-GC-ns/op	       112.0 retained-heap-B	599731688 B/op	    8200 allocs/op
+BenchmarkLifecycle/N1000000/ArenaReset-8        	       1	 678572100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 641264100 create-use-ns/op	  37306900 release-GC-ns/op	 332524184 retained-heap-B	  524416 B/op	       8 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8         	       1	1988755100 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 703782600 create-use-ns/op	1284970900 release-GC-ns/op	 332524312 retained-heap-B	 2359984 B/op	      37 allocs/op
+PASS

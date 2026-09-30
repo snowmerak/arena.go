@@ -32,7 +32,7 @@ func (s *heapBackend) allocate(r allocationRequest) (memoryBlock, error) {
 			continue
 		}
 		if !slot.value.IsValid() || slot.request != r {
-			if r.kind == objectAllocation && r.size > 0 {
+			if r.typ != nil && r.size > 0 {
 				slot.value = reflect.New(r.typ)
 				slot.block.pointer = slot.value.UnsafePointer()
 			} else {
@@ -62,7 +62,7 @@ func (s *heapBackend) release(block memoryBlock, r allocationRequest) {
 	if slot.request != r {
 		panic("Arena did not forward the exact allocation request")
 	}
-	if r.kind == objectAllocation && r.size > 0 {
+	if r.typ != nil && r.size > 0 {
 		slot.value.Elem().SetZero() // A real typed write, including the GC barrier.
 	} else {
 		clear(slot.value.Bytes())
@@ -129,6 +129,49 @@ func (s *heapBackend) check(live map[location]allocation) error {
 type backendNode struct {
 	ID    uint64
 	Child *[1024]byte
+}
+
+func TestBackendTypedSlice(t *testing.T) {
+	storage := new(heapBackend)
+	a := newArena(storage)
+	t.Cleanup(func() { _ = a.Close() })
+	values, err := a.AllocSlice[backendNode](3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range values {
+		values[i].Child = new([1024]byte)
+		values[i].Child[0] = byte(i + 1)
+	}
+	runtime.GC()
+	for i := range values {
+		if values[i].Child[0] != byte(i+1) {
+			t.Fatal("typed batch lost an outgoing reference")
+		}
+	}
+	if err := a.Check(); err != nil {
+		t.Fatal(err)
+	}
+	if storage.slots[0].request.typ != reflect.TypeFor[[3]backendNode]() {
+		t.Fatal("backend did not receive the exact array type")
+	}
+	if err := a.FreeSlice(values); err != nil {
+		t.Fatal(err)
+	}
+	if !storage.slots[0].value.Elem().IsZero() {
+		t.Fatal("typed batch release retained references")
+	}
+	values, err = a.AllocSlice[backendNode](3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	values[0].Child = new([1024]byte)
+	if err := a.Reset(); err != nil {
+		t.Fatal(err)
+	}
+	if !storage.slots[0].value.Elem().IsZero() {
+		t.Fatal("typed batch reset retained references")
+	}
 }
 
 func TestBackendSegmentsAndTypedRelease(t *testing.T) {

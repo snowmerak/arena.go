@@ -1,12 +1,16 @@
 # Bulk allocation through a complete GC cycle
 
+This is the historical investigation before optimization. See the
+[optimization report](optimization.md) for the implemented bulk API and new
+before/after measurements; the original measurements below are preserved.
+
 Benchmark source: [cycle_bench_test.go](../cycle_bench_test.go).
 Allocator revision: `5d5fc315ebd59d5229b720f45644453afd244374`.
 This benchmark adds measurement code without changing the allocator.
 
 ## Results
 
-**The current arena did not improve performance in this workload.** Even when
+**The arena at the measured revision did not improve performance in this workload.** Even when
 its storage was prepared and reused, the median time from object creation to
 GC completion exceeded that of ordinary individual heap allocations.
 
