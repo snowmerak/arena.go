@@ -1,4 +1,4 @@
-"""Summarize native Go lifecycle benchmark output using only the standard library."""
+"""Summarize native Go arena benchmark output using only the standard library."""
 
 import argparse
 import json
@@ -11,9 +11,10 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
+    parser.add_argument("--benchmark", choices=("Lifecycle", "PoolChurn"), default="Lifecycle")
     args = parser.parse_args()
     groups = defaultdict(list)
-    pattern = re.compile(r"BenchmarkLifecycle/N(\d+)/(\w+)-\d+\s+(\d+)\s+(.+)")
+    pattern = re.compile(rf"Benchmark{args.benchmark}/N(\d+)/(\w+)-\d+\s+(\d+)\s+(.+)")
     content = args.input.read_text(encoding="utf-8-sig")
     if "PASS" not in content or "FAIL" in content:
         raise SystemExit("Input must be a completed, passing benchmark run")
@@ -27,7 +28,7 @@ def main():
         metrics["iterations"] = int(iterations)
         groups[int(count), mode].append(metrics)
     if not groups:
-        raise SystemExit("No lifecycle benchmark samples found")
+        raise SystemExit(f"No {args.benchmark} benchmark samples found")
 
     rows = []
     for (count, mode), samples in groups.items():
@@ -42,6 +43,17 @@ def main():
         })
     output = args.input.with_suffix(".summary.json")
     output.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+
+    if args.benchmark == "PoolChurn":
+        print("| Live slots | Mode | Samples | Median ns | Min–max ns | Bytes/op | Allocs/op |")
+        print("| ---: | --- | ---: | ---: | ---: | ---: | ---: |")
+        for row in rows:
+            m = row["median"]
+            print(f"| {row['objects']:,} | {row['mode']} | {row['samples']} | "
+                  f"{m['ns/op']:.2f} | {row['min_ns']:.2f}–{row['max_ns']:.2f} | "
+                  f"{m['B/op']:,.0f} | {m['allocs/op']:,.0f} |")
+        print(f"\nSummary: {output}")
+        return
 
     print("| Objects | Mode | Samples | Median ms | Min–max ms | Allocated MiB | Allocs | Retained MiB | GCs |")
     print("| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")

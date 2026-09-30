@@ -3,6 +3,7 @@
 This is the historical investigation before optimization. See the
 [optimization report](optimization.md) for the implemented bulk API and new
 before/after measurements; the original measurements below are preserved.
+The subsequent [typed-pool report](pools.md) covers independent slot lifetimes.
 
 Benchmark source: [cycle_bench_test.go](../cycle_bench_test.go).
 Allocator revision: `5d5fc315ebd59d5229b720f45644453afd244374`.

@@ -40,6 +40,7 @@ type Arena struct {
 	owner   uint64
 	nextID  uint64
 	live    map[location]allocation
+	pools   map[location]*poolState
 }
 
 // New allocates fixed byte storage for pointer-free values. Capacity may be
@@ -149,6 +150,10 @@ func (a *Arena) allocate(request allocationRequest) (allocation, error) {
 }
 
 func (a *Arena) release(rec allocation) {
+	if rec.request.kind == poolAllocation {
+		a.pools[rec.block.location].invalidate()
+		delete(a.pools, rec.block.location)
+	}
 	a.storage.release(rec.block, rec.request)
 	delete(a.live, rec.block.location)
 }
@@ -163,6 +168,10 @@ func (a *Arena) Reset() error {
 		return ErrClosed
 	}
 	a.storage.reset()
+	for _, pool := range a.pools {
+		pool.invalidate()
+	}
+	clear(a.pools)
 	clear(a.live)
 	return nil
 }
@@ -177,6 +186,10 @@ func (a *Arena) Close() error {
 		return nil
 	}
 	a.storage.close()
+	for _, pool := range a.pools {
+		pool.invalidate()
+	}
+	a.pools = nil
 	a.storage, a.live = nil, nil
 	return nil
 }

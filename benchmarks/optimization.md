@@ -1,5 +1,8 @@
 # Bulk allocation optimization
 
+The later [typed-pool implementation and measurements](pools.md) address
+individual slot reuse. This report preserves the earlier bulk-API experiment.
+
 `AllocSlice[T](n)` stores and tracks a complete batch once. It removes the
 per-element mutex, type validation, map insertion, and release bookkeeping from
 the bulk workload. Elements share a lifetime; this is a different release

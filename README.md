@@ -44,6 +44,8 @@ func main() {
 - `Alloc[T]()` computes size and alignment and returns a zero-initialized `*T`.
 - `AllocSlice[T](n)` returns n zero-initialized elements with length and capacity
   n, tracked as **one allocation**. `FreeSlice(values)` releases the whole batch.
+- `MakePool[T](capacity)` reserves slots together for repeated individual
+  allocation and release through `pool.Alloc()` and `pool.Free(ptr)`.
 - Allocation searches reusable regions in address order, then advances the bump
   offset if no suitable region is available.
 - `Free(ptr)` and `FreeBuffer(handle)` clear storage and merge adjacent free
@@ -58,6 +60,76 @@ func main() {
   allocation metadata; storage is zeroed when allocated again.
 - `Close()` invalidates every allocation and releases the arena's references to
   storage. The GC determines when memory is reclaimed. Closing is idempotent.
+
+## Typed pools
+
+For one struct type whose instances are repeatedly created and freed, reserve
+a pool once and reuse its slots:
+
+```go
+pool, err := a.MakePool[User](10_000)
+if err != nil { panic(err) }
+defer func() { _ = pool.Close() }()
+
+user, err := pool.Alloc()
+if err != nil { panic(err) }
+user.ID = 42
+if err := pool.Free(user); err != nil { panic(err) }
+// The next Alloc can reuse this slot and returns a zeroed User.
+```
+
+`MakePool` is a generic Arena method; `Pool[T]` binds its element type at
+construction. Slots start free. Capacity is fixed and exhaustion returns
+`ErrOutOfMemory`. Make multiple pools, including multiple pools of the same
+type, when their capacities or lifetimes differ. Slot addresses stay stable.
+The default byte backend still rejects pointer-bearing T.
+
+| Operation | Effect |
+| --- | --- |
+| `pool.Alloc()` | Acquires one zeroed slot |
+| `pool.Free(ptr)` | Clears a live slot and makes it reusable by this pool |
+| `pool.HandleOf(ptr)` | Captures a live slot's generation-checked `PoolHandle` |
+| `pool.Get(handle)` | Checks the handle and borrows its `*T` |
+| `pool.FreeHandle(handle)` | Releases the exact slot generation |
+| `pool.Reset()` | Clears all issued slots and invalidates handles; retains the pool |
+| `pool.Close()` | Permanently closes the pool and returns its backing region to the arena |
+| `pool.Stats()` | Reports slot capacity, active slots, and free slots |
+
+`Arena.Reset()` and `Arena.Close()` permanently close all their pools. Releasing
+a pool's backing handle from `Arena.Allocations()` with `FreeBuffer` also closes
+it. Old pool operations then return `ErrClosed`; Close remains idempotent.
+Use pool methods for slot management; `Arena.Free`, `BufferOf`, and `FreeSlice`
+do not manage pool slots. Closing one pool does not invalidate other allocations.
+
+The arena tracks a whole pool as one allocation, even when all slots are free.
+Its `Used` counts the entire reservation, and `Check` also validates pool slot
+state, generations, free-list coverage, and counters. Empty pools reserve one
+byte. Zero-sized T uses padded, aligned slots so each live slot has a distinct
+address. Pool metadata uses eight pointer-free bytes per slot on the Go heap,
+plus fixed bookkeeping. Nonzero T occupies `capacity * sizeof(T)` backing bytes.
+Reflected array types are cached as with `AllocSlice`.
+
+Pool metadata uses the owning arena's mutex, including operations on different
+pools. Pointer access still requires caller synchronization with release/reset.
+Pool copies share state; the zero value is closed. `PoolHandle` contains no Go
+pointers and may be stored inside arena objects. The Pool itself contains Go
+references and must live outside byte-backed arena objects.
+
+Raw-pointer Free has the same ABA limitation as Arena.Free. Capture HandleOf
+before release and use FreeHandle to reject stale releases after slot reuse.
+Handles remain invalid after Reset or replacement of the entire pool. Generation
+IDs never wrap; after `2^63 - 1` successful slot allocations the pool returns
+`ErrIDExhausted`. Freeing a slot does not recursively free String/Buffer handles
+stored in its fields. Release those allocations separately when needed.
+
+In a seven-sample local lifecycle run, a reused pool individually allocated and
+freed one million 64-byte records, including use and GC, in **50.0ms**, versus
+**608.4ms** for individual Arena allocations. Retained memory fell from about
+**317MiB to 69MiB**, with **zero measured heap allocations** during pool reuse.
+Ordinary heap allocation was faster at **28.8ms** in that run. Scattered slot
+replacement also did not establish a general advantage over the heap or the
+arena at every capacity. See the [pool measurements](benchmarks/pools.md) for
+raw results, ranges, limitations, and reproduction commands.
 
 ## Bulk allocation
 
@@ -101,7 +173,7 @@ rejects types containing strings, slices, pointers, `unsafe.Pointer`, maps,
 interfaces, functions, or channels with `ErrPointerType`. Arrays and structs are
 checked recursively; even zero-length arrays of pointers are conservatively
 rejected. Numeric values, booleans, pointer-free arrays and structs,
-`arena.String`, and `arena.Buffer` are supported. `uintptr` is allowed as a number,
+`arena.String`, `arena.Buffer`, and `arena.PoolHandle` are supported. `uintptr` is allowed as a number,
 but storing an object's address in it does not keep that object alive.
 
 Returned `*T`, `[]T`, and `[]byte` values are borrowed views. Do not read or write them
@@ -174,12 +246,18 @@ Common allocation management is separate from physical storage.
 | Internal `backend` | Storage-specific allocation, release, reset, address lookup, statistics, and checking |
 | `byteBackend` | The default byte array, alignment, free region merging, and pointer-type rejection |
 
-The public API includes `New`, `Alloc[T]`, `Free`, `AllocSlice[T]`, and `FreeSlice`.
+The public API includes `New`, `Alloc[T]`, `Free`, `AllocSlice[T]`, `FreeSlice`,
+and `MakePool[T]`.
 Additional storage strategies
 can implement the internal `backend` interface and be composed through a new
 constructor. A public backend registration API and a production typed-chunk
 allocator are not implemented. The default `New` still rejects pointer-bearing
 types.
+
+`Pool[T]` is a fixed reservation over the selected backend, not a new scanned
+storage backend. It supplies an exact array type at the storage boundary and
+uses typed writes to clear released slots. An alternate typed test backend
+verifies GC-visible references and clearing for pointer-bearing pool elements.
 
 `Buffer.Segment()` and `Buffer.Offset()` identify locations across storage
 segments. Tests connect an alternative backend with separately allocated typed
@@ -212,6 +290,7 @@ go vet ./...
 go test -gcflags=all=-d=checkptr=2 ./...
 go test -race ./...
 go test '-run=^$' -fuzz=FuzzArena -fuzztime=10s
+go test '-run=^$' -fuzz=FuzzPool -fuzztime=10s
 go test '-run=^$' '-bench=.' -benchmem
 ```
 

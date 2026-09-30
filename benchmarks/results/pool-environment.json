@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-01",
+  "base_revision": "c3c993bac42510103a42cf9f3a59b5a55384b20c",
+  "measured_revision": "working tree; source hashes below",
+  "go": "go version go1.27.1 windows/arm64",
+  "os": "windows",
+  "arch": "arm64",
+  "cpu": "Snapdragon X Plus X1P42100 / Qualcomm Oryon",
+  "logical_cpus": 8,
+  "GOMAXPROCS": 8,
+  "GOGC": 100,
+  "GOMEMLIMIT": "off",
+  "GOEXPERIMENT": "",
+  "object_bytes": 64,
+  "lifecycle_objects": [
+    10000,
+    100000,
+    1000000
+  ],
+  "lifecycle_warmup_cycles": 1,
+  "lifecycle_measured_cycles_per_sample": 1,
+  "churn_live_slots": [
+    1024,
+    65536
+  ],
+  "churn_index_step": 7919,
+  "churn_setup": "prefill all slots, force one GC before timing",
+  "churn_target_duration": "300ms per sample",
+  "samples_per_case": 7,
+  "order": "declared benchmark order, all seven repetitions of each subcase grouped",
+  "binary_sha256": "5EDB5EF57490A506C1FB637BB333CC8CCBB42E72888466166B98CB98526416F6",
+  "lifecycle_arguments": [
+    "-test.run=^$",
+    "-test.bench=^BenchmarkLifecycle$",
+    "-test.benchtime=1x",
+    "-test.count=7",
+    "-test.cpu=8",
+    "-test.benchmem"
+  ],
+  "churn_arguments": [
+    "-test.run=^$",
+    "-test.bench=^BenchmarkPoolChurn$",
+    "-test.benchtime=300ms",
+    "-test.count=7",
+    "-test.cpu=8",
+    "-test.benchmem"
+  ],
+  "source_hash_normalization": "UTF-8 without BOM, CRLF converted to LF",
+  "source_sha256": {
+    "arena_bench_test.go": "ABDDA276AFFAF3E3D83A91491C377F60DD8D4593095D73E0F94D6E0C8B967CE6",
+    "arena_test.go": "E08690A70D86E25B8FD9D09AC9BFA9A2824CABBA732EDCFCB097DE099EE801E5",
+    "arena.go": "CC19CA5D4F3E5AA2A987507AA8DFD5AF45D299F035B181BFD99164A80E4A12F4",
+    "backend_test.go": "0E4C02B3F68F4FF6EC1104C90139D255B1AE591B93B9D90EE1177DD7B647151B",
+    "backend.go": "BADAE1D5714B32247FD219998CE513FBBDE49BDBEC2886118B39EC21A635EC8D",
+    "buffer.go": "66B7356B4FC111654A56CCEDDFD4CC02F8FCDB3DD8D48046C6724EE2BFBFF874",
+    "byte_backend.go": "700BD0407AD63954D04124895563A091C7CA5C19E7224110E73BA778790EBEFB",
+    "checker_test.go": "F017372AE03775D7118B95AE72CD29A0D741F68872FAF4F2D1AFB33E5FB25EF0",
+    "checker.go": "7B55BBA28802ADB3ADFB5746AC9DE1551C79A91F4DB3D3C7ED696DFBC57C92F4",
+    "cycle_bench_test.go": "3EE423B7362EE1DCE55A3E2C91069412C5DB40E193D563361B9AEDC6759578F8",
+    "example_test.go": "1D3309821BC1327C94507C4B817B6AAF7EF1352149D0CBB404184DB8085020B4",
+    "pool_bench_test.go": "8892C3F70CDBB62E5CC2DA7DD7BD36D5190312D2FC67A00F9F831BAFAB05097E",
+    "pool_internal_test.go": "669EE0E6AD5DF0E4422ADBCC0DA19C4C5A6556C0C982B00002392F1F3AFAD041",
+    "pool_test.go": "25F880A39BF78D81EAE310963327D5784D421799073D650F428C95D40A073A9C",
+    "pool.go": "3A712FEE254986904A0A6C3D45DDC40F97471056EFCE92F30954E29307A76BA6",
+    "slice_test.go": "17CEAB83B150345FC460512268E41951A0F25A2856D55FB2355FAEBADE73D759",
+    "slice.go": "7FCED2C08FDDDE6EF4661F6EC804DD83E48E9678239C4822DD47D9B62792256C",
+    "string.go": "75A0D799824B60754FAAE5973DCCA627D03CEB8AD051CB2CA0FEFFFB958AFB92",
+    "typeinfo.go": "864ADA9D0277A6E3D15800FBE0590F0835DD0675CC9F63099EB079641F2452CD"
+  }
+}

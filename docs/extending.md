@@ -10,6 +10,7 @@
 | --- | --- |
 | `arena.go` | 제네릭 API, 할당 세대, 정확한 타입/시작 주소 검증, 수명 관리 |
 | `slice.go` | 일괄 할당, 전체 슬라이스 검증, 배치 핸들 추출 |
+| `pool.go` | 타입별 고정 슬롯, 개별 재사용, 세대 핸들, 풀 수명 |
 | `backend.go` | 저장소 계약, 요청 정보, 실제 포인터와 구간 위치 |
 | `byte_backend.go` | 바이트 저장소의 공간 배치, 재사용, 정렬, 물리 영역 검사 |
 | `typeinfo.go` | 포인터 포함 여부의 재귀 검사와 캐시 |
@@ -27,6 +28,15 @@
 `reflect.New(request.typ)`으로 배열을 만들고 `SetZero`로 전체 참조를 지운다.
 크기가 0인 배치도 고유 주소를 위한 최소 한 바이트를 확보한다.
 슬라이스의 길이/용량, 원소 타입, 시작 주소는 공통 Arena 계층에서 검증한다.
+
+`MakePool[T](capacity)`은 `poolAllocation` 종류와 `[capacity]T`의 실제 타입을
+전달한다. 크기가 0인 T는 T와 바이트 패딩을 포함한 구조체 배열을 사용해 슬롯마다
+고유하고 정렬된 주소를 갖는다. 풀 하나는 공통 live map의 한 할당이며, 개별 슬롯은
+포인터 없는 uint64 상태 배열로 관리한다. 모든 풀 작업도 같은 Arena mutex를 쓴다.
+슬롯 Free/Reset은 typed 대입/clear를 사용하며 backend.release를 호출하지 않는다.
+풀 Close 또는 backing Buffer 해제 시에만 backend.release를 호출한다.
+Arena.Reset/Close는 풀의 포인터와 상태 배열 참조도 제거해 기존 Pool을 무효화한다.
+새 backend는 풀 전체 배열을 실제 타입으로 할당하고 루트를 유지해야 한다.
 
 ## 새 저장소를 추가하는 순서
 

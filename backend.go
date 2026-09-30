@@ -12,6 +12,7 @@ const (
 	byteAllocation
 	stringAllocation
 	sliceAllocation
+	poolAllocation
 )
 
 // location identifies storage, independently of allocation generation. Different

@@ -50,6 +50,8 @@ func (a *Arena) Allocations() []Allocation {
 			name = rec.request.typ.String()
 		case sliceAllocation:
 			name = "[]" + rec.request.typ.Elem().String()
+		case poolAllocation:
+			name = "arena.Pool[" + a.pools[rec.block.location].typ.String() + "]"
 		case stringAllocation:
 			name = "arena.String"
 		}
@@ -74,6 +76,7 @@ func (a *Arena) Check() error {
 		return ErrClosed
 	}
 	ids := make(map[uint64]bool, len(a.live))
+	poolCount := 0
 	for where, rec := range a.live {
 		b := rec.buffer
 		r := rec.request
@@ -88,12 +91,22 @@ func (a *Arena) Check() error {
 			return fmt.Errorf("arena: invalid alignment at %v", where)
 		}
 		switch r.kind {
-		case objectAllocation, sliceAllocation:
+		case objectAllocation, sliceAllocation, poolAllocation:
 			if r.typ == nil || r.typ.Size() != uintptr(b.size) || r.typ.Align() != r.align {
 				return fmt.Errorf("arena: invalid object type at %v", where)
 			}
-			if r.kind == sliceAllocation && r.typ.Kind() != reflect.Array {
+			if (r.kind == sliceAllocation || r.kind == poolAllocation) && r.typ.Kind() != reflect.Array {
 				return fmt.Errorf("arena: invalid slice type at %v", where)
+			}
+			if r.kind == poolAllocation {
+				poolCount++
+				pool := a.pools[where]
+				if pool == nil {
+					return fmt.Errorf("arena: missing pool at %v", where)
+				}
+				if err := pool.check(rec); err != nil {
+					return err
+				}
 			}
 		case byteAllocation, stringAllocation:
 			if r.typ != nil || r.align != 1 {
@@ -102,6 +115,9 @@ func (a *Arena) Check() error {
 		default:
 			return fmt.Errorf("arena: invalid allocation kind at %v", where)
 		}
+	}
+	if poolCount != len(a.pools) {
+		return fmt.Errorf("arena: orphaned pool metadata")
 	}
 	return a.storage.check(a.live)
 }

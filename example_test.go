@@ -68,3 +68,38 @@ func ExampleArena_BufferOf() {
 	// true
 	// false
 }
+
+func ExampleArena_MakePool() {
+	type Item struct{ ID uint64 }
+	a, err := arena.New(4096)
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = a.Close() }()
+	pool, err := a.MakePool[Item](128)
+	if err != nil {
+		panic(err)
+	}
+	item, err := pool.Alloc()
+	if err != nil {
+		panic(err)
+	}
+	item.ID = 42
+	fmt.Println(item.ID, pool.Stats().Active)
+	if err := pool.Free(item); err != nil {
+		panic(err)
+	}
+	reused, err := pool.Alloc()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(reused == item, reused.ID)
+	if err := pool.Close(); err != nil {
+		panic(err)
+	}
+	fmt.Println(a.Stats().Used)
+	// Output:
+	// 42 1
+	// true 0
+	// 0
+}
