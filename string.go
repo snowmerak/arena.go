@@ -18,12 +18,12 @@ func (s String) Buffer() Buffer { return s.buffer }
 func (a *Arena) NewString(value string) (String, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	b, err := a.allocate(len(value), 1, stringAllocation, nil)
+	rec, err := a.allocate(allocationRequest{size: len(value), align: 1, kind: stringAllocation})
 	if err != nil {
 		return String{}, err
 	}
-	copy(a.data[b.offset:b.offset+b.size], value)
-	return String{buffer: b}, nil
+	copy(blockBytes(rec), value)
+	return String{buffer: rec.buffer}, nil
 }
 
 // String copies a live arena string into an ordinary Go string. The result is
@@ -35,11 +35,10 @@ func (a *Arena) String(s String) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if rec.kind != stringAllocation {
+	if rec.request.kind != stringAllocation {
 		return "", ErrTypeMismatch
 	}
-	b := rec.buffer
-	return string(a.data[b.offset : b.offset+b.size]), nil
+	return string(blockBytes(rec)), nil
 }
 
 // FreeString releases the string's bytes and invalidates every copy of s.
@@ -51,7 +50,7 @@ func (a *Arena) FreeString(s String) error {
 	if err != nil {
 		return err
 	}
-	if rec.kind != stringAllocation {
+	if rec.request.kind != stringAllocation {
 		return ErrTypeMismatch
 	}
 	a.release(rec)

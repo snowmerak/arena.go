@@ -1,9 +1,9 @@
 package arena
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
-	"unsafe"
 )
 
 // Stats describes backing storage only; heap-allocated metadata is excluded.
@@ -12,7 +12,7 @@ type Stats struct {
 	Used             int // Reserved bytes, including the byte reserved for zero-sized values.
 	Free             int // Includes alignment gaps and the unallocated tail.
 	Active           int
-	Head             int // End of the occupied prefix, including holes.
+	Head             int // Sum of occupied prefix lengths across storage segments.
 	FreeBlocks       int
 	LargestFreeBlock int // Before accounting for the next allocation's alignment.
 }
@@ -21,14 +21,11 @@ type Stats struct {
 func (a *Arena) Stats() Stats {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	s := Stats{Capacity: len(a.data), Used: a.used, Free: len(a.data) - a.used,
-		Active: len(a.live), Head: a.head, FreeBlocks: len(a.free), LargestFreeBlock: len(a.data) - a.head}
-	if a.head < len(a.data) {
-		s.FreeBlocks++
+	if a.isClosed() {
+		return Stats{}
 	}
-	for _, hole := range a.free {
-		s.LargestFreeBlock = max(s.LargestFreeBlock, hole.end-hole.start)
-	}
+	s := a.storage.stats()
+	s.Active = len(a.live)
 	return s
 }
 
@@ -39,22 +36,28 @@ type Allocation struct {
 	Alignment int
 }
 
-// Allocations returns the currently live allocations in address order.
+// Allocations returns live allocations ordered by segment and then offset.
+// With New's single byte segment, this is also address order.
 func (a *Arena) Allocations() []Allocation {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	result := make([]Allocation, 0, len(a.live))
 	for _, rec := range a.live {
 		name := "[]byte"
-		switch rec.kind {
+		switch rec.request.kind {
 		case objectAllocation:
-			name = rec.typ.String()
+			name = rec.request.typ.String()
 		case stringAllocation:
 			name = "arena.String"
 		}
-		result = append(result, Allocation{Buffer: rec.buffer, Type: name, Alignment: rec.align})
+		result = append(result, Allocation{Buffer: rec.buffer, Type: name, Alignment: rec.request.align})
 	}
-	slices.SortFunc(result, func(x, y Allocation) int { return x.Buffer.offset - y.Buffer.offset })
+	slices.SortFunc(result, func(x, y Allocation) int {
+		if order := cmp.Compare(x.Buffer.segment, y.Buffer.segment); order != 0 {
+			return order
+		}
+		return cmp.Compare(x.Buffer.offset, y.Buffer.offset)
+	})
 	return result
 }
 
@@ -67,56 +70,32 @@ func (a *Arena) Check() error {
 	if a.isClosed() {
 		return ErrClosed
 	}
-	if a.head < 0 || a.head > len(a.data) || a.used < 0 || a.used > a.head {
-		return fmt.Errorf("arena: invalid head or usage")
-	}
-	regions := make([]span, 0, len(a.live)+len(a.free))
-	used := 0
 	ids := make(map[uint64]bool, len(a.live))
-	for offset, rec := range a.live {
+	for where, rec := range a.live {
 		b := rec.buffer
-		reserved := max(b.size, 1)
-		if b.owner != a.owner || b.id == 0 || b.id > a.nextID || ids[b.id] || b.offset != offset {
-			return fmt.Errorf("arena: invalid allocation identity at %d", offset)
+		r := rec.request
+		if b.owner != a.owner || b.id == 0 || b.id > a.nextID || ids[b.id] || b.location != where || rec.block.location != where {
+			return fmt.Errorf("arena: invalid allocation identity at %v", where)
 		}
 		ids[b.id] = true
-		if offset < 0 || offset >= a.head || b.size < 0 || reserved > a.head-offset {
-			return fmt.Errorf("arena: allocation outside occupied storage at %d", offset)
+		if b.size < 0 || b.size != r.size || rec.block.pointer == nil {
+			return fmt.Errorf("arena: invalid allocation size or pointer at %v", where)
 		}
-		if rec.align < 1 || rec.align&(rec.align-1) != 0 || uintptr(unsafe.Pointer(&a.data[offset]))%uintptr(rec.align) != 0 {
-			return fmt.Errorf("arena: invalid alignment at %d", offset)
+		if r.align < 1 || r.align&(r.align-1) != 0 || uintptr(rec.block.pointer)%uintptr(r.align) != 0 {
+			return fmt.Errorf("arena: invalid alignment at %v", where)
 		}
-		switch rec.kind {
+		switch r.kind {
 		case objectAllocation:
-			if rec.typ == nil || !isPointerFree(rec.typ) || rec.typ.Size() != uintptr(b.size) || rec.typ.Align() != rec.align {
-				return fmt.Errorf("arena: invalid object type at %d", offset)
+			if r.typ == nil || r.typ.Size() != uintptr(b.size) || r.typ.Align() != r.align {
+				return fmt.Errorf("arena: invalid object type at %v", where)
 			}
 		case byteAllocation, stringAllocation:
-			if rec.typ != nil || rec.align != 1 {
-				return fmt.Errorf("arena: invalid byte allocation at %d", offset)
+			if r.typ != nil || r.align != 1 {
+				return fmt.Errorf("arena: invalid byte allocation at %v", where)
 			}
 		default:
-			return fmt.Errorf("arena: invalid allocation kind at %d", offset)
+			return fmt.Errorf("arena: invalid allocation kind at %v", where)
 		}
-		used += reserved
-		regions = append(regions, span{offset, offset + reserved})
 	}
-	for i, hole := range a.free {
-		if hole.start < 0 || hole.start >= hole.end || hole.end >= a.head || (i > 0 && a.free[i-1].end >= hole.start) {
-			return fmt.Errorf("arena: invalid or unmerged free span at %d", hole.start)
-		}
-		regions = append(regions, hole)
-	}
-	slices.SortFunc(regions, func(x, y span) int { return x.start - y.start })
-	end := 0
-	for _, region := range regions {
-		if region.start != end {
-			return fmt.Errorf("arena: gap or overlap at %d", end)
-		}
-		end = region.end
-	}
-	if end != a.head || used != a.used {
-		return fmt.Errorf("arena: inconsistent occupied storage or usage")
-	}
-	return nil
+	return a.storage.check(a.live)
 }

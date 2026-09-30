@@ -4,23 +4,27 @@ package arena
 // one invalidates all copies. It does not keep its Arena alive. Its zero value
 // is invalid. A Buffer may itself be stored in arena memory.
 type Buffer struct {
-	owner  uint64
-	id     uint64
-	offset int
-	size   int
+	owner uint64
+	id    uint64
+	location
+	size int
 }
 
 // Len reports the requested size in bytes, even after the buffer is freed.
 func (b Buffer) Len() int { return b.size }
 
-// Offset reports the byte offset within the arena, for diagnostics.
+// Segment reports the storage segment ID. New's byte backend uses segment 0.
+func (b Buffer) Segment() uint64 { return b.segment }
+
+// Offset reports the byte offset within the segment, for diagnostics.
 func (b Buffer) Offset() int { return b.offset }
 
 // AllocBuffer reserves zeroed bytes. Even a zero-length buffer reserves one byte.
 func (a *Arena) AllocBuffer(size int) (Buffer, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.allocate(size, 1, byteAllocation, nil)
+	rec, err := a.allocate(allocationRequest{size: size, align: 1, kind: byteAllocation})
+	return rec.buffer, err
 }
 
 // Bytes borrows a mutable view of a buffer created by AllocBuffer. Its capacity
@@ -34,11 +38,10 @@ func (a *Arena) Bytes(b Buffer) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if rec.kind != byteAllocation {
+	if rec.request.kind != byteAllocation {
 		return nil, ErrTypeMismatch
 	}
-	end := b.offset + b.size
-	return a.data[b.offset:end:end], nil
+	return blockBytes(rec), nil
 }
 
 // FreeBuffer releases any allocation using its identity. Unlike Free with a raw
@@ -70,7 +73,7 @@ func (a *Arena) lookup(b Buffer) (allocation, error) {
 	if b.owner != a.owner || b.id == 0 {
 		return allocation{}, ErrInvalidBuffer
 	}
-	rec, ok := a.live[b.offset]
+	rec, ok := a.live[b.location]
 	if !ok || rec.buffer != b {
 		return allocation{}, ErrInvalidBuffer
 	}

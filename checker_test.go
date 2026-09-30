@@ -10,11 +10,13 @@ func TestCheckDetectsCorruption(t *testing.T) {
 		name    string
 		corrupt func(*Arena)
 	}{
-		{"usage", func(a *Arena) { a.used++ }},
-		{"overlap", func(a *Arena) { a.free = []span{{0, 4}} }},
-		{"gap", func(a *Arena) { a.head++ }},
-		{"identity", func(a *Arena) { rec := a.live[0]; rec.buffer.owner++; a.live[0] = rec }},
-		{"alignment", func(a *Arena) { rec := a.live[0]; rec.align = 3; a.live[0] = rec }},
+		{"usage", func(a *Arena) { a.storage.(*byteBackend).used++ }},
+		{"overlap", func(a *Arena) { a.storage.(*byteBackend).free = []span{{0, 4}} }},
+		{"gap", func(a *Arena) { a.storage.(*byteBackend).head++ }},
+		{"identity", func(a *Arena) { rec := a.live[location{}]; rec.buffer.owner++; a.live[location{}] = rec }},
+		{"alignment", func(a *Arena) { rec := a.live[location{}]; rec.request.align = 3; a.live[location{}] = rec }},
+		{"segment", func(a *Arena) { rec := a.live[location{}]; rec.buffer.segment++; a.live[location{}] = rec }},
+		{"pointer", func(a *Arena) { rec := a.live[location{}]; rec.block.pointer = nil; a.live[location{}] = rec }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			a, _ := New(64)
