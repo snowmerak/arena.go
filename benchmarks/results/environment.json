@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-30",
+  "revision": "5d5fc315ebd59d5229b720f45644453afd244374",
+  "go": "go version go1.27.1 windows/arm64",
+  "os": "windows",
+  "arch": "arm64",
+  "cpu": "Snapdragon X Plus X1P42100 / Qualcomm Oryon",
+  "logical_cpus": 8,
+  "GOMAXPROCS": 8,
+  "GOGC": 100,
+  "GOMEMLIMIT": "off",
+  "GOEXPERIMENT": "",
+  "objects": [
+    10000,
+    100000,
+    1000000
+  ],
+  "object_bytes": 64,
+  "warmup_cycles_per_sample": 1,
+  "measured_cycles_per_sample": 1,
+  "samples_per_case": 7,
+  "benchmark_sha256": "F571FA0F5196A6428A93EA16CF609999509F8DEC295B39D1BEDC87CF6248C271",
+  "command": "go test '-run=^$' '-bench=^BenchmarkLifecycle$' -benchtime=1x -count=7 -cpu=8 -benchmem"
+}

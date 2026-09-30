@@ -1,0 +1,7 @@
+goos: windows
+goarch: arm64
+pkg: github.com/snowmerak/arena.go
+BenchmarkLifecycle/N1000000/ArenaReset-8         	       5	 704712820 ns/op	         0 GC-pause-ns/op	         1.000 GCs/op	 664622060 create-use-ns/op	  40089560 release-GC-ns/op	 332523696 retained-heap-B	  367094 B/op	       5 allocs/op
+BenchmarkLifecycle/N1000000/ArenaFree-8          	       5	1284050120 ns/op	    302180 GC-pause-ns/op	         1.000 GCs/op	 616317340 create-use-ns/op	 667731460 release-GC-ns/op	 332523664 retained-heap-B	  367091 B/op	       5 allocs/op
+PASS
+ok  	github.com/snowmerak/arena.go	16.680s

@@ -1,0 +1,39 @@
+File: arena-lifecycle.test.exe
+Build ID: C:\Users\snowm\AppData\Local\Temp\go-build596497266\b001\arena.go.test.exe2026-09-30 22:18:09.11589 +0900 KST
+Type: cpu
+Time: 2026-09-30 22:18:09 KST
+Duration: 16.39s, Total samples = 17.49s (106.69%)
+Showing nodes accounting for 15.60s, 89.19% of 17.49s total
+Dropped 154 nodes (cum <= 0.09s)
+Showing top 30 nodes out of 81
+      flat  flat%   sum%        cum   cum%
+     3.78s 21.61% 21.61%      6.29s 35.96%  internal/sync.(*HashTrieMap[go.shape.interface {},go.shape.interface {}]).Load
+     1.93s 11.03% 32.65%      5.13s 29.33%  github.com/snowmerak/arena%2ego..Free[go.shape.struct { ID uint64; Values [7]uint64 }]
+     1.91s 10.92% 43.57%      1.91s 10.92%  runtime.efaceeq
+     1.20s  6.86% 50.43%      7.96s 45.51%  github.com/snowmerak/arena%2ego.(*byteBackend).allocate
+     0.96s  5.49% 55.92%      2.01s 11.49%  github.com/snowmerak/arena%2ego.(*byteBackend).addFree
+     0.88s  5.03% 60.95%      0.90s  5.15%  slices.BinarySearchFunc[go.shape.[]github.com/snowmerak/arena%2ego.span,go.shape.struct { github.com/snowmerak/arena%2ego.start int; github.com/snowmerak/arena%2ego.end int },go.shape.int]
+     0.75s  4.29% 65.24%      1.76s 10.06%  runtime.mapassign
+     0.43s  2.46% 67.70%      1.32s  7.55%  runtime.scanObject
+     0.41s  2.34% 70.04%      0.41s  2.34%  runtime.memclrNoHeapPointers
+     0.35s  2.00% 72.04%      0.43s  2.46%  runtime.typePointers.next
+     0.32s  1.83% 73.87%      2.23s 12.75%  internal/sync.(*entry[go.shape.interface {},go.shape.interface {}]).lookup (inline)
+     0.26s  1.49% 75.36%        10s 57.18%  github.com/snowmerak/arena%2ego.(*Arena).allocate
+     0.24s  1.37% 76.73%      2.13s 12.18%  github.com/snowmerak/arena%2ego.(*byteBackend).release
+     0.23s  1.32% 78.04%      2.78s 15.89%  github.com/snowmerak/arena%2ego.(*Arena).release (inline)
+     0.23s  1.32% 79.36%      0.23s  1.32%  github.com/snowmerak/arena%2ego.(*byteBackend).fit (inline)
+     0.19s  1.09% 80.45%      0.19s  1.09%  runtime.typePointers.nextFast (inline)
+     0.18s  1.03% 81.48%      0.39s  2.23%  github.com/snowmerak/arena%2ego.(*Arena).findObject
+     0.14s   0.8% 82.28%      0.14s   0.8%  internal/runtime/maps.(*ctrlGroup).setEmpty (inline)
+     0.13s  0.74% 83.02%      0.17s  0.97%  runtime.findObject
+     0.13s  0.74% 83.76%      0.13s  0.74%  runtime.memmove
+     0.13s  0.74% 84.51%      0.24s  1.37%  runtime.nilinterhash
+     0.13s  0.74% 85.25%      0.15s  0.86%  runtime.tryDeferToSpanScan
+     0.10s  0.57% 85.82%     15.65s 89.48%  github.com/snowmerak/arena%2ego_test.runLifecycle
+     0.09s  0.51% 86.34%      0.29s  1.66%  internal/runtime/maps.(*table).uncheckedPutSlot
+     0.09s  0.51% 86.85%      0.09s  0.51%  runtime.semawakeup
+     0.09s  0.51% 87.36%      0.09s  0.51%  runtime.sysUnusedOS
+     0.09s  0.51% 87.88%      0.13s  0.74%  slices.Insert[go.shape.[]github.com/snowmerak/arena%2ego.span,go.shape.struct { github.com/snowmerak/arena%2ego.start int; github.com/snowmerak/arena%2ego.end int }]
+     0.08s  0.46% 88.34%     10.13s 57.92%  github.com/snowmerak/arena%2ego..Alloc[go.shape.struct { ID uint64; Values [7]uint64 }]
+     0.08s  0.46% 88.79%      0.13s  0.74%  internal/runtime/maps.MemHash
+     0.07s   0.4% 89.19%      0.34s  1.94%  internal/runtime/maps.(*table).Delete

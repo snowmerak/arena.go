@@ -1,0 +1,326 @@
+[
+  {
+    "objects": 10000,
+    "mode": "HeapObjects",
+    "samples": 7,
+    "median": {
+      "ns/op": 681300.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 242900.0,
+      "release-GC-ns/op": 404400.0,
+      "retained-heap-B": 16.0,
+      "B/op": 640000.0,
+      "allocs/op": 10000.0,
+      "iterations": 1
+    },
+    "min_ns": 584200.0,
+    "max_ns": 4318800.0
+  },
+  {
+    "objects": 10000,
+    "mode": "SliceFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 346300.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 120800.0,
+      "release-GC-ns/op": 225100.0,
+      "retained-heap-B": 0.0,
+      "B/op": 647168.0,
+      "allocs/op": 1.0,
+      "iterations": 1
+    },
+    "min_ns": 304700.0,
+    "max_ns": 450500.0
+  },
+  {
+    "objects": 10000,
+    "mode": "SliceReuse",
+    "samples": 7,
+    "median": {
+      "ns/op": 320700.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 101400.0,
+      "release-GC-ns/op": 218900.0,
+      "retained-heap-B": 647168.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 270700.0,
+    "max_ns": 379200.0
+  },
+  {
+    "objects": 10000,
+    "mode": "ArenaFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 2543500.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 2.0,
+      "create-use-ns/op": 2337000.0,
+      "release-GC-ns/op": 232700.0,
+      "retained-heap-B": 0.0,
+      "B/op": 4842040.0,
+      "allocs/op": 84.0,
+      "iterations": 1
+    },
+    "min_ns": 2259500.0,
+    "max_ns": 3194500.0
+  },
+  {
+    "objects": 10000,
+    "mode": "ArenaReset",
+    "samples": 7,
+    "median": {
+      "ns/op": 1733800.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 1398200.0,
+      "release-GC-ns/op": 335200.0,
+      "retained-heap-B": 2745608.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 1260900.0,
+    "max_ns": 7203900.0
+  },
+  {
+    "objects": 10000,
+    "mode": "ArenaFree",
+    "samples": 7,
+    "median": {
+      "ns/op": 3386800.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 1113800.0,
+      "release-GC-ns/op": 2319600.0,
+      "retained-heap-B": 2745640.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 2771500.0,
+    "max_ns": 6477600.0
+  },
+  {
+    "objects": 100000,
+    "mode": "HeapObjects",
+    "samples": 7,
+    "median": {
+      "ns/op": 6689500.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 3.0,
+      "create-use-ns/op": 4784500.0,
+      "release-GC-ns/op": 1410300.0,
+      "retained-heap-B": 112.0,
+      "B/op": 6400000.0,
+      "allocs/op": 100000.0,
+      "iterations": 1
+    },
+    "min_ns": 4143800.0,
+    "max_ns": 9055400.0
+  },
+  {
+    "objects": 100000,
+    "mode": "SliceFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 4804200.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 2.0,
+      "create-use-ns/op": 2376200.0,
+      "release-GC-ns/op": 1966600.0,
+      "retained-heap-B": 0.0,
+      "B/op": 6406144.0,
+      "allocs/op": 1.0,
+      "iterations": 1
+    },
+    "min_ns": 4065300.0,
+    "max_ns": 7291000.0
+  },
+  {
+    "objects": 100000,
+    "mode": "SliceReuse",
+    "samples": 7,
+    "median": {
+      "ns/op": 1574200.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 1009400.0,
+      "release-GC-ns/op": 559400.0,
+      "retained-heap-B": 6406256.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 1563900.0,
+    "max_ns": 1611700.0
+  },
+  {
+    "objects": 100000,
+    "mode": "ArenaFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 42546100.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 4.0,
+      "create-use-ns/op": 39005700.0,
+      "release-GC-ns/op": 1068900.0,
+      "retained-heap-B": 224.0,
+      "B/op": 39970232.0,
+      "allocs/op": 535.0,
+      "iterations": 1
+    },
+    "min_ns": 30492200.0,
+    "max_ns": 51295600.0
+  },
+  {
+    "objects": 100000,
+    "mode": "ArenaReset",
+    "samples": 7,
+    "median": {
+      "ns/op": 35462600.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 33232800.0,
+      "release-GC-ns/op": 2275200.0,
+      "retained-heap-B": 23189368.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 27395000.0,
+    "max_ns": 42799800.0
+  },
+  {
+    "objects": 100000,
+    "mode": "ArenaFree",
+    "samples": 7,
+    "median": {
+      "ns/op": 72178200.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 33081500.0,
+      "release-GC-ns/op": 39620700.0,
+      "retained-heap-B": 25419432.0,
+      "B/op": 4459840.0,
+      "allocs/op": 69.0,
+      "iterations": 1
+    },
+    "min_ns": 61739400.0,
+    "max_ns": 88100200.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "HeapObjects",
+    "samples": 7,
+    "median": {
+      "ns/op": 71154800.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 4.0,
+      "create-use-ns/op": 58638000.0,
+      "release-GC-ns/op": 14522700.0,
+      "retained-heap-B": 112.0,
+      "B/op": 64000112.0,
+      "allocs/op": 1000001.0,
+      "iterations": 1
+    },
+    "min_ns": 53017800.0,
+    "max_ns": 1895983800.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "SliceFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 40887900.0,
+      "GC-pause-ns/op": 2008400.0,
+      "GCs/op": 2.0,
+      "create-use-ns/op": 34899100.0,
+      "release-GC-ns/op": 5986900.0,
+      "retained-heap-B": 0.0,
+      "B/op": 64004096.0,
+      "allocs/op": 1.0,
+      "iterations": 1
+    },
+    "min_ns": 25609000.0,
+    "max_ns": 59724300.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "SliceReuse",
+    "samples": 7,
+    "median": {
+      "ns/op": 16878900.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 11910100.0,
+      "release-GC-ns/op": 4112700.0,
+      "retained-heap-B": 64004096.0,
+      "B/op": 0.0,
+      "allocs/op": 0.0,
+      "iterations": 1
+    },
+    "min_ns": 13687400.0,
+    "max_ns": 20102700.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "ArenaFresh",
+    "samples": 7,
+    "median": {
+      "ns/op": 720521800.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 5.0,
+      "create-use-ns/op": 715375600.0,
+      "release-GC-ns/op": 5383300.0,
+      "retained-heap-B": 0.0,
+      "B/op": 600255992.0,
+      "allocs/op": 8207.0,
+      "iterations": 1
+    },
+    "min_ns": 705845100.0,
+    "max_ns": 1186982700.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "ArenaReset",
+    "samples": 7,
+    "median": {
+      "ns/op": 644550900.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 605560000.0,
+      "release-GC-ns/op": 38989100.0,
+      "retained-heap-B": 332524168.0,
+      "B/op": 1311040.0,
+      "allocs/op": 20.0,
+      "iterations": 1
+    },
+    "min_ns": 595292100.0,
+    "max_ns": 758454700.0
+  },
+  {
+    "objects": 1000000,
+    "mode": "ArenaFree",
+    "samples": 7,
+    "median": {
+      "ns/op": 1540444500.0,
+      "GC-pause-ns/op": 0.0,
+      "GCs/op": 1.0,
+      "create-use-ns/op": 735462000.0,
+      "release-GC-ns/op": 799509600.0,
+      "retained-heap-B": 332524200.0,
+      "B/op": 1311040.0,
+      "allocs/op": 20.0,
+      "iterations": 1
+    },
+    "min_ns": 1383364900.0,
+    "max_ns": 1935743700.0
+  }
+]

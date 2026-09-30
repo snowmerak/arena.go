@@ -1,0 +1,34 @@
+File: arena-lifecycle.test.exe
+Build ID: C:\Users\snowm\AppData\Local\Temp\go-build596497266\b001\arena.go.test.exe2026-09-30 22:18:09.11589 +0900 KST
+Type: cpu
+Time: 2026-09-30 22:18:09 KST
+Duration: 16.39s, Total samples = 17.49s (106.69%)
+Showing nodes accounting for 12.29s, 70.27% of 17.49s total
+Dropped 154 nodes (cum <= 0.09s)
+Showing top 25 nodes out of 81
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     15.65s 89.48%  github.com/snowmerak/arena%2ego_test.BenchmarkLifecycle.func1.1
+         0     0%     0%     15.65s 89.48%  github.com/snowmerak/arena%2ego_test.benchmarkLifecycle
+     0.10s  0.57%  0.57%     15.65s 89.48%  github.com/snowmerak/arena%2ego_test.runLifecycle
+         0     0%  0.57%     15.65s 89.48%  testing.(*B).runN
+         0     0%  0.57%     11.52s 65.87%  testing.(*B).launch
+     0.05s  0.29%  0.86%     10.24s 58.55%  github.com/snowmerak/arena%2ego_test.populateCycle
+     0.08s  0.46%  1.32%     10.13s 57.92%  github.com/snowmerak/arena%2ego..Alloc[go.shape.struct { ID uint64; Values [7]uint64 }]
+     0.26s  1.49%  2.80%        10s 57.18%  github.com/snowmerak/arena%2ego.(*Arena).allocate
+     1.20s  6.86%  9.66%      7.96s 45.51%  github.com/snowmerak/arena%2ego.(*byteBackend).allocate
+     0.04s  0.23%  9.89%      6.34s 36.25%  github.com/snowmerak/arena%2ego.isPointerFree
+     0.01s 0.057%  9.95%      6.30s 36.02%  sync.(*Map).Load (inline)
+     3.78s 21.61% 31.56%      6.29s 35.96%  internal/sync.(*HashTrieMap[go.shape.interface {},go.shape.interface {}]).Load
+     1.93s 11.03% 42.60%      5.13s 29.33%  github.com/snowmerak/arena%2ego..Free[go.shape.struct { ID uint64; Values [7]uint64 }]
+         0     0% 42.60%      4.13s 23.61%  testing.(*B).run1.func1
+     0.23s  1.32% 43.91%      2.78s 15.89%  github.com/snowmerak/arena%2ego.(*Arena).release (inline)
+     0.32s  1.83% 45.74%      2.23s 12.75%  internal/sync.(*entry[go.shape.interface {},go.shape.interface {}]).lookup (inline)
+     0.24s  1.37% 47.11%      2.13s 12.18%  github.com/snowmerak/arena%2ego.(*byteBackend).release
+     0.96s  5.49% 52.60%      2.01s 11.49%  github.com/snowmerak/arena%2ego.(*byteBackend).addFree
+     1.91s 10.92% 63.52%      1.91s 10.92%  runtime.efaceeq
+     0.75s  4.29% 67.81%      1.76s 10.06%  runtime.mapassign
+         0     0% 67.81%      1.66s  9.49%  runtime.systemstack
+         0     0% 67.81%      1.44s  8.23%  runtime.gcBgMarkWorker.func2
+         0     0% 67.81%      1.44s  8.23%  runtime.gcDrain
+         0     0% 67.81%      1.37s  7.83%  runtime.gcBgMarkWorker
+     0.43s  2.46% 70.27%      1.32s  7.55%  runtime.scanObject

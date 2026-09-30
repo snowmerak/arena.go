@@ -1,8 +1,8 @@
 # arena.go
 
-하나의 큰 `[]byte` 안에 포인터 없는 Go 값을 배치하는 고정 용량 메모리 아레나.
-Go **1.27.1 이상**을 사용하며, `Alloc`과 `Free`는 독립 타입 매개변수를 갖는
-**제네릭 메서드**다. 외부 의존성은 없다.
+A fixed-capacity memory arena that stores pointer-free Go values in one large
+`[]byte` buffer. Requires **Go 1.27.1 or later**. `Alloc` and `Free` are
+**generic methods** with their own type parameters. No external dependencies.
 
 ```go
 package main
@@ -34,113 +34,132 @@ func main() {
     fmt.Println(u.ID, name)
 
     if err := a.FreeString(u.Name); err != nil { panic(err) }
-    if err := a.Free(u); err != nil { panic(err) } // T는 인수에서 추론
+    if err := a.Free(u); err != nil { panic(err) } // T is inferred from u.
     fmt.Println(a.Stats().Active) // 0
 }
 ```
 
-## 할당과 공간 재활용
+## Allocation and reuse
 
-- `Alloc[T]()`는 정렬과 크기를 계산하고, 0으로 초기화된 `*T`를 반환한다.
-- 재사용 가능한 구간을 주소 순서로 먼저 찾고, 없으면 버퍼 끝의 offset을 전진시킨다.
-- `Free(ptr)`와 `FreeBuffer(handle)`는 공간을 지우고 인접한 빈 구간을 합친다.
-  마지막 구간이 비면 offset도 되돌린다. 정렬 때문에 남은 바이트도 재사용한다.
-- 용량을 자동 확장하거나 살아 있는 객체를 이동시키지 않는다. 총 여유 공간이 있어도
-  정렬된 연속 공간이 부족하면 `ErrOutOfMemory`를 반환한다.
-- 크기가 0인 객체, 버퍼, 문자열도 식별 가능한 위치를 위해 1바이트를 예약한다.
-- `Reset()`은 모든 할당을 무효화하고 같은 backing buffer를 재사용한다.
-  메타데이터를 비우며, 재할당 시 해당 바이트를 0으로 초기화한다.
-- `Close()`는 모든 할당을 무효화하고 아레나가 보유한 메모리 참조를 놓는다.
-  실제 회수 시점은 GC가 결정한다. 여러 번 호출해도 된다.
+- `Alloc[T]()` computes size and alignment and returns a zero-initialized `*T`.
+- Allocation searches reusable regions in address order, then advances the bump
+  offset if no suitable region is available.
+- `Free(ptr)` and `FreeBuffer(handle)` clear storage and merge adjacent free
+  regions. Free space at the end moves the bump offset back. Alignment gaps are
+  also available for reuse.
+- Capacity is fixed, and live objects never move. Allocation returns
+  `ErrOutOfMemory` when no suitably aligned contiguous region fits, even if total
+  free space is sufficient.
+- Zero-sized objects, buffers, and strings reserve one byte to give each live
+  allocation a distinct location.
+- `Reset()` invalidates every allocation and reuses the backing buffer. It clears
+  allocation metadata; storage is zeroed when allocated again.
+- `Close()` invalidates every allocation and releases the arena's references to
+  storage. The GC determines when memory is reclaimed. Closing is idempotent.
 
-## GC와 수명 규칙
+## GC and lifetime rules
 
-`[]byte`의 backing array 내부는 GC가 포인터 저장 영역으로 스캔하지 않는다.
-따라서 `*T`로 재해석했다고 해서 T의 필드가 GC에 알려지지는 않는다.
-이 구현은 문자열, 슬라이스, 포인터, `unsafe.Pointer`, map, interface, func, chan을
-포함한 타입을 `ErrPointerType`으로 거부한다. 배열과 구조체 내부까지 재귀 검사하며,
-보수적으로 길이가 0인 포인터 배열도 거부한다. 숫자, bool, 포인터 없는 배열/구조체와
-`arena.String`, `arena.Buffer`는 허용한다. `uintptr`도 숫자로 허용하지만
-Go 객체 주소를 저장해도 그 객체를 살려 두지는 못한다.
+The GC does not scan a `[]byte` backing array for pointers. Reinterpreting its
+contents as `*T` does not register T's fields with the GC. The byte backend
+rejects types containing strings, slices, pointers, `unsafe.Pointer`, maps,
+interfaces, functions, or channels with `ErrPointerType`. Arrays and structs are
+checked recursively; even zero-length arrays of pointers are conservatively
+rejected. Numeric values, booleans, pointer-free arrays and structs,
+`arena.String`, and `arena.Buffer` are supported. `uintptr` is allowed as a number,
+but storing an object's address in it does not keep that object alive.
 
-반환된 `*T`와 `[]byte`는 빌린 뷰다. 해당 할당의 해제, `Reset`, `Close` 이후에는
-읽거나 쓰면 안 된다. API는 이미 반환된 포인터나 슬라이스를 회수할 수 없다.
-일반 Go 포인터나 슬라이스 자체는 backing array를 GC로부터 유지하지만,
-그 사실이 해제된 구간의 사용을 유효하게 만들지는 않는다.
+Returned `*T` and `[]byte` values are borrowed views. Do not read or write them
+after their allocation is freed, or after `Reset` or `Close`. The API cannot
+revoke pointers or slices already handed to a caller. An ordinary Go pointer or
+slice can keep the backing array alive, but that does not make a freed region
+valid to access.
 
-`Arena`의 메타데이터 메서드는 mutex로 보호된다. 반환된 포인터/슬라이스를 통한
-데이터 접근과 그 할당의 해제·초기화 사이 동기화는 호출자가 책임진다.
-`InUse` 결과는 확인 시점의 상태이며 사용 중 해제를 막는 대여 잠금이 아니다.
-`Arena`를 값으로 복사하지 말고 `New`가 반환하는 포인터를 사용한다.
+Arena metadata operations are protected by a mutex. Callers must synchronize
+access through borrowed pointers and slices with freeing or resetting their
+storage. `InUse` is a snapshot, not a lease that prevents concurrent release.
+Do not copy an `Arena` value; use the pointer returned by `New`.
 
-## String과 바이트 버퍼
+## Strings and byte buffers
 
-| API | 동작 |
+| API | Behavior |
 | --- | --- |
-| `a.NewString(value)` | 문자열 바이트를 아레나에 복사하고 `arena.String` 반환 |
-| `a.String(s)` | 유효성을 확인하고 독립적인 Go `string`으로 복사 |
-| `a.FreeString(s)` | 문자열 저장 공간 해제 |
-| `s.Len()` / `s.Buffer()` | 바이트 길이 / 추적용 핸들 |
-| `a.AllocBuffer(n)` | 초기화된 n바이트 공간의 `Buffer` 반환 |
-| `a.Bytes(b)` | 길이와 capacity가 n인 변경 가능한 뷰 반환 |
-| `a.FreeBuffer(b)` | 핸들의 소유자와 할당 번호를 확인하여 공간 해제 |
+| `a.NewString(value)` | Copies string bytes into the arena and returns an `arena.String` |
+| `a.String(s)` | Validates s and copies its contents into an independent Go `string` |
+| `a.FreeString(s)` | Releases the string's storage |
+| `s.Len()` / `s.Buffer()` | Returns the byte length / allocation handle |
+| `a.AllocBuffer(n)` | Returns a `Buffer` for n zero-initialized bytes |
+| `a.Bytes(b)` | Returns a mutable view with length and capacity both equal to n |
+| `a.FreeBuffer(b)` | Validates ownership and allocation identity, then releases storage |
 
-`String`과 `Buffer`는 소유 아레나 ID, 할당 ID, 저장소 구간 ID, offset, 길이만 보관한다.
-Go 포인터가 없으므로 아레나 안의 구조체에 넣을 수 있다. 대신 핸들 자체는 아레나를
-살려 두지 않는다. 읽을 때 소유 아레나를 명시적으로 전달해야 한다.
-두 타입의 제로 값은 유효한 할당이 아니다. 빈 문자열도 `NewString("")`으로 만든다.
-`Len`, `Segment`, `Offset`은 메타데이터를 반환할 뿐 생존 여부는 검사하지 않는다.
+`String` and `Buffer` contain only an arena ID, allocation ID, storage segment ID,
+offset, and length. They contain no Go pointers and can be embedded in
+arena-allocated structs. The handles themselves do not keep the arena alive;
+resolving their contents requires the owning arena. Their zero values are invalid.
+Create empty strings with `NewString("")`. `Len`, `Segment`, and `Offset` expose
+metadata without checking whether the allocation is still live.
 
-`Bytes`는 `AllocBuffer`로 만든 버퍼에만 허용된다. 문자열이나 typed object의
-바이트를 이 API로 수정할 수 없다. `a.String(s)`의 결과는 복사본이므로
-아레나를 해제해도 유효하다. `String` 핸들을 복사하면 같은 할당을 공유하며,
-한 번 해제하면 모든 복사본이 무효화된다. 이를 포함한 구조체를 `Free`해도
-문자열은 자동으로 해제되지 않는다. 각각 해제하거나 `Reset`을 사용한다.
+`Bytes` accepts only buffers created by `AllocBuffer`; it cannot expose string
+or typed object storage for mutation. The result of `a.String(s)` is a copy and
+remains valid after the arena is released. Copies of a `String` handle share one
+allocation, so releasing it invalidates every handle copy. Freeing a struct that
+contains a `String` does not free the string automatically. Release each
+allocation explicitly or use `Reset`.
 
-## 사용 중인 버퍼 확인
+## Tracking live allocations
 
-- `BufferOf(ptr)`로 **살아 있는 동안** typed object의 할당 핸들을 얻는다.
-- `InUse(handle)`은 아레나와 할당 ID를 함께 확인한다. 주소 재사용이나 `Reset`
-  이후에도 오래된 핸들이 새 할당으로 오인되지 않는다.
-- `Allocations()`는 구간 ID, offset 순서의 현재 할당 목록과 타입, 정렬 정보를 반환한다.
-  기본 바이트 저장소는 구간 ID가 0이므로 기존과 같은 주소 순서다.
-- `Stats()`는 용량, 예약된 바이트, 여유 공간, 활성 할당 수, offset, 빈 구간 수,
-  최대 연속 빈 공간을 반환한다. 정렬 패딩은 여유 공간에 포함된다.
-- `Check()`는 영역의 겹침/누락, 병합 상태, 정렬, ID, 사용량 집계가 일치하는지 검사한다.
+- Call `BufferOf(ptr)` **while the object is live** to capture its allocation handle.
+- `InUse(handle)` checks both the owning arena and allocation ID. Reusing an
+  address or resetting the arena does not make an old handle valid again.
+- `Allocations()` returns live allocations, their types, and alignment, ordered
+  by segment ID and offset. The default byte backend uses segment 0, so this is
+  also address order.
+- `Stats()` reports capacity, reserved bytes, free space, active allocations,
+  occupied prefix length, free region count, and the largest contiguous free
+  region. Alignment gaps count as free space.
+- `Check()` verifies allocation identities, alignment, region coverage, merging,
+  and storage accounting.
 
-원시 포인터에는 할당 번호가 없다. `Free(ptr)`는 nil, 다른 아레나의 포인터,
-중간 주소, 타입 불일치, 아직 재사용되지 않은 해제 주소를 거부하지만,
-**같은 주소에 같은 타입이 재할당되면 이전 포인터와 구별할 수 없다(ABA)**.
-이 경우까지 해제 오류를 검출하려면 처음에 `BufferOf`로 핸들을 얻어 보관하고
-`FreeBuffer`로 해제한다. 이미 무효화된 포인터에 `BufferOf`를 다시 호출해서는 안 된다.
-체커는 원시 포인터의 해제 후 접근이나 임의의 `unsafe` 메모리 손상을 막지 못한다.
+Raw pointers have no allocation ID. `Free(ptr)` rejects nil, foreign pointers,
+interior addresses, type mismatches, and freed addresses that have not been
+reused. However, **an old pointer cannot be distinguished from a new allocation
+of the same type at the same address (ABA)**. To detect stale releases after
+address reuse, capture a handle with `BufferOf` while the pointer is valid and
+release it with `FreeBuffer`. Do not call `BufferOf` on an already invalid pointer.
+The checker cannot prevent stale pointer dereferences or arbitrary `unsafe`
+memory corruption.
 
-## 저장소 확장 구조
+## Storage extension boundary
 
-`Arena`의 공통 관리와 실제 메모리 저장소를 분리했다.
+Common allocation management is separate from physical storage.
 
-| 구성 | 역할 |
+| Component | Responsibility |
 | --- | --- |
-| `Arena` | 제네릭 메서드, 할당 ID, 핸들/타입 검증, 동기화, 수명 관리 |
-| 내부 `backend` | 저장소별 할당·해제·초기화·주소 조회·통계·공간 검사 계약 |
-| `byteBackend` | 기존 단일 바이트 배열, 정렬, 빈 공간 병합, 포인터 포함 타입 거부 |
+| `Arena` | Generic methods, allocation IDs, handle/type validation, synchronization, and lifetimes |
+| Internal `backend` | Storage-specific allocation, release, reset, address lookup, statistics, and checking |
+| `byteBackend` | The default byte array, alignment, free region merging, and pointer-type rejection |
 
-공개 사용법은 `New`, `Alloc[T]`, `Free` 그대로다. 다른 저장소는 라이브러리 내부에서
-`backend`를 구현하고 생성자에서 조합하도록 준비했다. 외부 사용자용 저장소 등록 API나
-실제 타입별 청크 구현은 아직 제공하지 않는다. 기본 `New`는 포인터 포함 타입을 계속 거부한다.
+The public API remains `New`, `Alloc[T]`, and `Free`. Additional storage strategies
+can implement the internal `backend` interface and be composed through a new
+constructor. A public backend registration API and a production typed-chunk
+allocator are not implemented. The default `New` still rejects pointer-bearing
+types.
 
-`Buffer.Segment()`와 `Buffer.Offset()` 조합으로 여러 저장소 구간을 구별할 수 있다.
-테스트에서는 별도로 할당한 typed heap 슬롯을 연결해 같은 offset의 구간들, 포인터 포함
-객체의 할당/해제, 문자열/버퍼 접근, Reset/Close 위임과 실패 처리를 확인한다.
-구현 위치와 지켜야 할 계약은 [저장소 확장 가이드](docs/extending.md)에 정리했다.
+`Buffer.Segment()` and `Buffer.Offset()` identify locations across storage
+segments. Tests connect an alternative backend with separately allocated typed
+heap slots to verify identical offsets in different segments, pointer-bearing
+objects, string/buffer access, lifecycle delegation, and failure handling.
+See the [storage extension guide](docs/extending.md) for implementation locations
+and contracts; that guide is currently written in Korean.
 
-## 비용과 검증
+## Costs and validation
 
-객체 데이터는 하나의 backing buffer에 놓지만 map, 빈 구간 목록, 타입 검사 캐시 등의
-메타데이터는 일반 Go heap을 사용한다. 진단용 스냅샷과 `Check`도 메모리를 할당한다.
-빈 구간 탐색/삽입은 구간 수에 비례하고, `Reset`은 활성 메타데이터 정리 비용이 있다.
-따라서 모든 연산이 O(1)이거나 heap allocation이 전혀 없는 구현은 아니다.
-속도가 일반 `new`보다 빠르다는 보장도 없다. 실제 사용 패턴으로 측정해야 한다.
+Object data lives in one backing buffer, but allocation maps, free region lists,
+and the type-check cache use the ordinary Go heap. Diagnostic snapshots and
+`Check` also allocate. Searching and inserting free regions costs time
+proportional to their number, and `Reset` must clear active allocation metadata.
+Operations are therefore neither universally O(1) nor guaranteed to perform zero
+heap allocations. This implementation is not guaranteed to outperform `new`.
+Measure your actual workload.
 
 ```text
 go test ./...
@@ -151,29 +170,36 @@ go test '-run=^$' -fuzz=FuzzArena -fuzztime=10s
 go test '-run=^$' '-bench=.' -benchmem
 ```
 
-race 검사는 Go 도구 체인이 지원하는 OS/아키텍처에서 실행한다.
-벤치마크의 `BenchmarkBatch` 한 연산은 128개 객체 할당이다. 일반 heap 측도
-포인터를 보관해 컴파일러가 할당을 스택으로 제거하지 못하게 한다.
+Run race detection on an OS/architecture supported by the Go toolchain.
+One `BenchmarkBatch` operation allocates 128 objects. Its heap baseline retains
+pointers so the compiler cannot optimize those allocations onto the stack.
 
-초기 커밋 `e6b57b0`의 검증 환경은 Go 1.27.1, Windows/arm64,
-Snapdragon X Plus X1P42100(Qualcomm Oryon)이다. 빌드, 단위/예제 테스트,
-`go vet`, `checkptr=2`가 통과했으며 코드 커버리지는 95.2%였다.
-10초 퍼징은 4개 worker로 102,019회를 실행해 통과했다.
-golangci-lint 2.14.0의 기본 검사(`errcheck`, `govet`, `ineffassign`,
-`staticcheck`, `unused`)도 통과했다. 이 환경은 `-race`를 지원하지 않으며,
-`govulncheck`는 설치되어 있지 않아 실행하지 못했다.
+`BenchmarkLifecycle` covers bulk creation, use, release, and completion of GC.
+It compares fresh and reused heap, slice, and arena storage for 10,000, 100,000,
+and 1,000,000 objects of 64 bytes each. The current arena was slower than ordinary
+heap allocation in this workload. See the [methodology and results](benchmarks/README.md)
+for repeated measurements, memory costs, raw logs, and CPU profile analysis.
 
-200ms 벤치마크 단일 실행에서는 128개 객체 배치당 일반 heap이 4,951ns /
-12,288B / 128 allocations, 아레나 Reset 방식이 5,349ns / 0B /
-0 allocations로 측정됐다. 개별 Alloc/Free 반복은 100.8ns / 0B /
-0 allocations였다. 초기화 비용은 제외한 반복 구간의 측정값이며,
-반복 측정에 따른 분포나 애플리케이션 전체 성능을 의미하지 않는다.
+The initial commit, `e6b57b0`, was validated with Go 1.27.1 on Windows/arm64 using
+a Snapdragon X Plus X1P42100 (Qualcomm Oryon). Builds, unit/example tests,
+`go vet`, and `checkptr=2` passed, with 95.2% statement coverage. A 10-second fuzz
+run with four workers completed 102,019 executions. golangci-lint 2.14.0 passed
+with its default checks: `errcheck`, `govet`, `ineffassign`, `staticcheck`, and
+`unused`. Race detection is unsupported on this platform, and `govulncheck` was
+not installed, so those checks were not completed.
 
-저장소 분리 후에도 기본 테스트, 저장소 연결 테스트, vet, lint, checkptr가 통과했다.
-커버리지는 95.1%다. 이번 구조에는 구간 ID와 저장소 블록 메타데이터가 추가되므로
-이전 버전과 메모리 사용량이나 연산 비용이 같다고 가정하면 안 된다.
-핸들은 저장/전송용 고정 바이너리 형식이 아니며 구조체 크기는 `unsafe.Sizeof`로 계산한다.
+In a single 200ms benchmark run of that initial commit, allocating a batch of
+128 objects used 4,951ns / 12,288B / 128 allocations on the heap, versus
+5,349ns / 0B / 0 allocations with arena reset. Repeated individual Alloc/Free
+operations used 100.8ns / 0B / 0 allocations. These figures exclude setup and do
+not establish a latency distribution or application-level performance.
 
-설계 참고: [Go 1.27 제네릭 메서드](https://go.dev/doc/go1.27),
-[unsafe 패키지의 포인터 변환 규칙](https://pkg.go.dev/unsafe),
-[Go GC 가이드](https://go.dev/doc/gc-guide).
+After extracting the storage backend, the existing tests, backend integration
+tests, vet, lint, and checkptr passed, with 95.1% statement coverage. Segment IDs
+and storage block metadata add memory and execution costs; do not assume the
+same layout or performance as the initial version. Handles are not a stable
+binary storage or wire format. Compute struct sizes with `unsafe.Sizeof`.
+
+Design references: [Go 1.27 generic methods](https://go.dev/doc/go1.27),
+[unsafe pointer conversion rules](https://pkg.go.dev/unsafe), and the
+[Go GC guide](https://go.dev/doc/gc-guide).
